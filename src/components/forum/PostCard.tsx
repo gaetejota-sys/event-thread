@@ -13,6 +13,8 @@ interface PostCardProps {
   created_at: string | Date;
   votes: number;
   comments_count: number;
+  image_urls?: string[];
+  video_urls?: string[];
   onViewComments?: () => void;
   onTitleClick?: () => void;
   showCategory?: boolean;
@@ -43,6 +45,8 @@ export const PostCard = ({
   created_at, 
   votes, 
   comments_count, 
+  image_urls,
+  video_urls,
   onViewComments,
   onTitleClick,
   showCategory = true
@@ -84,6 +88,41 @@ export const PostCard = ({
           <p className="text-sm text-muted-foreground line-clamp-3">
             {content}
           </p>
+          
+          {/* Multimedia Content */}
+          {image_urls && image_urls.length > 0 && (
+            <div className="mt-3">
+              <div className="grid grid-cols-2 gap-2">
+                {image_urls.slice(0, 4).map((url, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={url}
+                      alt={`Imagen ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg border border-border"
+                    />
+                    {index === 3 && image_urls.length > 4 && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
+                          +{image_urls.length - 3} más
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {video_urls && video_urls.length > 0 && (
+            <div className="mt-3">
+              <video
+                src={video_urls[0]}
+                className="w-full h-32 object-cover rounded-lg border border-border"
+                controls={false}
+                muted
+              />
+            </div>
+          )}
           
           <div className="flex items-center justify-between pt-2">
             <div className="text-xs text-muted-foreground">

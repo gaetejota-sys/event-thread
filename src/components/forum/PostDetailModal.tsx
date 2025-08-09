@@ -87,6 +87,41 @@ export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps)
                   {post.content}
                 </div>
                 
+                {/* Multimedia Content */}
+                {post.image_urls && post.image_urls.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-md font-semibold">Imágenes</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {post.image_urls.map((url, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={url}
+                            alt={`Imagen ${index + 1}`}
+                            className="w-full h-32 md:h-40 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => window.open(url, '_blank')}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {post.video_urls && post.video_urls.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-md font-semibold">Videos</h4>
+                    <div className="space-y-3">
+                      {post.video_urls.map((url, index) => (
+                        <video
+                          key={index}
+                          src={url}
+                          className="w-full max-h-80 rounded-lg border border-border"
+                          controls
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-center text-sm text-muted-foreground">
                   <MessageSquare className="h-4 w-4 mr-1" />
                   {comments.length} comentarios

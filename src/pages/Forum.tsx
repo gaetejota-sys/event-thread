@@ -213,6 +213,8 @@ export const Forum = () => {
                   created_at={post.created_at}
                   votes={post.votes}
                   comments_count={post.comments_count}
+                  image_urls={post.image_urls}
+                  video_urls={post.video_urls}
                   onViewComments={() => handleViewComments(post)}
                   onTitleClick={() => handlePostClick(post)}
                   showCategory={selectedCategory === "all"}
