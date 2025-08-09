@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { PostCard } from "@/components/forum/PostCard";
+import { RaceCard } from "@/components/forum/RaceCard";
 import { CreateRaceModal } from "@/components/forum/CreateRaceModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar } from "lucide-react";
+import { useRaces } from "@/hooks/useRaces";
+import { CreateRaceData } from "@/types/race";
 
 const mockPosts = [
   {
@@ -34,15 +37,24 @@ export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateRaceModalOpen, setIsCreateRaceModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
+  const { races, loading, createRace } = useRaces();
 
-  const handleCreateRace = (raceData: any) => {
-    console.log("Nueva carrera creada:", raceData);
-    // Here you would typically send this to your backend
+  const handleCreateRace = async (raceData: CreateRaceData) => {
+    const success = await createRace(raceData);
+    if (success) {
+      setIsCreateRaceModalOpen(false);
+    }
   };
 
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredRaces = races.filter(race =>
+    race.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    race.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    race.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -89,8 +101,20 @@ export const Forum = () => {
               </Button>
             </div>
 
-            {/* Posts */}
+            {/* Content */}
             <div className="space-y-4">
+              {loading && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Cargando...</p>
+                </div>
+              )}
+              
+              {/* Races */}
+              {filteredRaces.map((race) => (
+                <RaceCard key={race.id} {...race} />
+              ))}
+              
+              {/* Posts */}
               {filteredPosts.map((post) => (
                 <PostCard
                   key={post.id}
@@ -99,9 +123,9 @@ export const Forum = () => {
                 />
               ))}
               
-              {filteredPosts.length === 0 && (
+              {!loading && filteredPosts.length === 0 && filteredRaces.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No se encontraron posts</p>
+                  <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
               )}
             </div>

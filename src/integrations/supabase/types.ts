@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      races: {
+        Row: {
+          created_at: string
+          description: string
+          event_date: string
+          id: string
+          image_urls: string[] | null
+          location: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_date: string
+          id?: string
+          image_urls?: string[] | null
+          location: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_date?: string
+          id?: string
+          image_urls?: string[] | null
+          location?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
