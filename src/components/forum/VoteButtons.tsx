@@ -16,23 +16,22 @@ export const VoteButtons = ({ postId, votes, className }: VoteButtonsProps) => {
   const handleDislike = () => vote(-1);
 
   return (
-    <div className={cn("flex items-center space-x-2", className)}>
+    <div className={cn("flex flex-col items-center space-y-1", className)}>
       <Button
         variant="ghost"
         size="sm"
         onClick={handleLike}
         disabled={loading}
         className={cn(
-          "flex items-center space-x-1 hover:bg-green-100 hover:text-green-700",
+          "h-8 w-8 p-0 hover:bg-green-100 hover:text-green-700",
           userVote?.vote_type === 1 && "bg-green-100 text-green-700"
         )}
       >
         <ThumbsUp className="h-4 w-4" />
-        <span className="text-xs">Me gusta</span>
       </Button>
       
       <span className={cn(
-        "text-sm font-medium px-2 py-1 rounded",
+        "text-sm font-medium",
         votes > 0 && "text-green-600",
         votes < 0 && "text-red-600",
         votes === 0 && "text-muted-foreground"
@@ -46,12 +45,11 @@ export const VoteButtons = ({ postId, votes, className }: VoteButtonsProps) => {
         onClick={handleDislike}
         disabled={loading}
         className={cn(
-          "flex items-center space-x-1 hover:bg-red-100 hover:text-red-700",
+          "h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700",
           userVote?.vote_type === -1 && "bg-red-100 text-red-700"
         )}
       >
         <ThumbsDown className="h-4 w-4" />
-        <span className="text-xs">No me gusta</span>
       </Button>
     </div>
   );
