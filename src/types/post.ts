@@ -30,4 +30,6 @@ export interface CreatePostData {
   content: string;
   category: string;
   race_id?: string;
+  image_urls?: string[];
+  video_urls?: string[];
 }

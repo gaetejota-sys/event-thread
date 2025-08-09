@@ -102,6 +102,8 @@ export const usePosts = () => {
           title: postData.title,
           content: postData.content,
           category: postData.category,
+          image_urls: postData.image_urls || [],
+          video_urls: postData.video_urls || [],
         })
         .select('*')
         .single();

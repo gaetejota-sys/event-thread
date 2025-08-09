@@ -70,6 +70,7 @@ export const Forum = () => {
     if (success) {
       setIsCreatePostModalOpen(false);
     }
+    return success;
   };
 
   const handlePostClick = (post: any) => {
@@ -284,6 +285,7 @@ export const Forum = () => {
         isOpen={isCreatePostModalOpen}
         onClose={() => setIsCreatePostModalOpen(false)}
         onSubmit={handleCreatePost}
+        onCreatePoll={() => Promise.resolve(false)} // Placeholder for now
         defaultCategory={selectedCategory !== "all" && selectedCategory !== "Próximas carreras" ? selectedCategory : ""}
       />
 
