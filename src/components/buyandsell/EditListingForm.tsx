@@ -158,7 +158,7 @@ export const EditListingForm = ({ post, onClose, onSuccess, onUpdate }: EditList
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto">{/* Cambiado de max-w-3xl a max-w-4xl */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Editar Aviso</CardTitle>
         <Button variant="ghost" size="sm" onClick={onClose}>
