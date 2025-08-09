@@ -82,6 +82,54 @@ export const usePosts = () => {
     }
   };
 
+  const createGeneralPost = async (postData: CreatePostData) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para crear un post",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          title: postData.title,
+          content: postData.content,
+          category: postData.category,
+        })
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      // Add the new post to the local state
+      setPosts(prev => [data, ...prev]);
+      
+      toast({
+        title: "¡Éxito!",
+        description: "Tu tema ha sido publicado correctamente",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo publicar el tema. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createRacePost = async (raceId: string, raceTitle: string, raceDescription: string, raceLocation: string, raceDate: string) => {
     if (!user) return false;
 
@@ -112,7 +160,7 @@ ${raceDescription}
   return {
     posts,
     loading,
-    createPost,
+    createPost: createGeneralPost,
     createRacePost,
     refetch: fetchPosts,
   };

@@ -5,13 +5,15 @@ import { ForumSidebar } from "@/components/forum/ForumSidebar";
 import { PostCard } from "@/components/forum/PostCard";
 import { RaceCard } from "@/components/forum/RaceCard";
 import { CreateRaceModal } from "@/components/forum/CreateRaceModal";
+import { CreatePostModal } from "@/components/forum/CreatePostModal";
 import { PostDetailModal } from "@/components/forum/PostDetailModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, CalendarDays } from "lucide-react";
+import { Search, CalendarDays, Plus } from "lucide-react";
 import { useRaces } from "@/hooks/useRaces";
 import { usePosts } from "@/hooks/usePosts";
 import { CreateRaceData } from "@/types/race";
+import { CreatePostData } from "@/types/post";
 
 const mockPosts = [
   {
@@ -40,10 +42,11 @@ export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateRaceModalOpen, setIsCreateRaceModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostDetailModalOpen, setIsPostDetailModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
-  const { posts: dbPosts, loading: postsLoading, createRacePost } = usePosts();
+  const { posts: dbPosts, loading: postsLoading, createRacePost, createPost } = usePosts();
   const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
 
   // Debug logging
@@ -59,6 +62,13 @@ export const Forum = () => {
     const success = await createRace(raceData);
     if (success) {
       setIsCreateRaceModalOpen(false);
+    }
+  };
+
+  const handleCreatePost = async (postData: CreatePostData) => {
+    const success = await createPost(postData);
+    if (success) {
+      setIsCreatePostModalOpen(false);
     }
   };
 
@@ -82,7 +92,10 @@ export const Forum = () => {
   const filteredDbPosts = dbPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.content.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || post.category === selectedCategory;
+    // Fix case sensitivity issue - normalize categories for comparison
+    const normalizedPostCategory = post.category.toLowerCase();
+    const normalizedSelectedCategory = selectedCategory.toLowerCase();
+    const matchesCategory = selectedCategory === "all" || normalizedPostCategory === normalizedSelectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -104,13 +117,13 @@ export const Forum = () => {
 
   const loading = racesLoading || postsLoading;
 
-  // Calculate post counts for sidebar
+  // Calculate post counts for sidebar - fix case sensitivity
   const postsCount = {
-    proximasCarreras: dbPosts.filter(p => p.category === "Próximas carreras").length,
-    carrerasPasadas: dbPosts.filter(p => p.category === "Carreras pasadas").length,
-    temasGenerales: dbPosts.filter(p => p.category === "Temas generales").length,
-    desafios: dbPosts.filter(p => p.category === "Desafíos").length,
-    compraVenta: dbPosts.filter(p => p.category === "Compra venta").length,
+    proximasCarreras: dbPosts.filter(p => p.category.toLowerCase() === "próximas carreras").length,
+    carrerasPasadas: dbPosts.filter(p => p.category.toLowerCase() === "carreras pasadas").length,
+    temasGenerales: dbPosts.filter(p => p.category.toLowerCase() === "temas generales").length,
+    desafios: dbPosts.filter(p => p.category.toLowerCase() === "desafíos").length,
+    compraVenta: dbPosts.filter(p => p.category.toLowerCase() === "compra venta").length,
   };
 
   return (
@@ -153,15 +166,29 @@ export const Forum = () => {
             </div>
 
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+            {/* Search and Create Post Section */}
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar posts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Create Post Button for non-race categories */}
+              {selectedCategory !== "all" && selectedCategory !== "Próximas carreras" && (
+                <Button 
+                  onClick={() => setIsCreatePostModalOpen(true)}
+                  className="w-full bg-gradient-button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear nuevo tema
+                </Button>
+              )}
             </div>
 
 
@@ -220,9 +247,26 @@ export const Forum = () => {
                 </div>
               )}
               
-              {!loading && selectedCategory !== "Próximas carreras" && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory !== "Próximas carreras" && selectedCategory !== "all" && filteredPosts.length === 0 && filteredDbPosts.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No se encontraron resultados para esta categoría</p>
+                  <Plus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No hay temas en esta categoría</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Sé el primero en crear un tema en {selectedCategory}.
+                  </p>
+                  <Button 
+                    onClick={() => setIsCreatePostModalOpen(true)}
+                    className="bg-gradient-button"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear primer tema
+                  </Button>
+                </div>
+              )}
+
+              {!loading && selectedCategory === "all" && filteredPosts.length === 0 && filteredDbPosts.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
               )}
             </div>
@@ -234,6 +278,13 @@ export const Forum = () => {
         isOpen={isCreateRaceModalOpen}
         onClose={() => setIsCreateRaceModalOpen(false)}
         onSubmit={handleCreateRace}
+      />
+
+      <CreatePostModal
+        isOpen={isCreatePostModalOpen}
+        onClose={() => setIsCreatePostModalOpen(false)}
+        onSubmit={handleCreatePost}
+        defaultCategory={selectedCategory !== "all" && selectedCategory !== "Próximas carreras" ? selectedCategory : ""}
       />
 
       <PostDetailModal
