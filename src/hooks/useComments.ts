@@ -13,17 +13,26 @@ export const useComments = (postId: string) => {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select(`
-          *,
-          profiles (
-            display_name
-          )
-        `)
+        .select('*')
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setComments(data || []);
+
+      // Fetch profiles for all unique user_ids
+      const userIds = [...new Set(data?.map(comment => comment.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', userIds);
+
+      // Map profiles to comments
+      const commentsWithProfiles = data?.map(comment => ({
+        ...comment,
+        profiles: profiles?.find(profile => profile.id === comment.user_id) || null
+      })) || [];
+
+      setComments(commentsWithProfiles);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast({
@@ -102,12 +111,7 @@ export const useComments = (postId: string) => {
           image_urls: imageUrls,
           video_urls: videoUrls,
         })
-        .select(`
-          *,
-          profiles (
-            display_name
-          )
-        `)
+        .select()
         .single();
 
       console.log('Insert result:', { data, error });
@@ -117,8 +121,21 @@ export const useComments = (postId: string) => {
         throw error;
       }
 
+      // Fetch user profile for this comment
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .eq('id', user.id)
+        .single();
+
+      // Add profile data to the comment
+      const commentWithProfile = {
+        ...data,
+        profiles: profile
+      };
+
       // Add the new comment to the local state
-      setComments(prev => [data, ...prev]);
+      setComments(prev => [commentWithProfile, ...prev]);
       
       toast({
         title: "¡Comentario publicado!",
