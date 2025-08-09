@@ -21,9 +21,6 @@ export interface Comment {
   content: string;
   created_at: string;
   updated_at: string;
-  profiles?: {
-    display_name: string | null;
-  } | null;
 }
 
 export interface CreatePostData {

@@ -5,9 +5,10 @@ import { ForumSidebar } from "@/components/forum/ForumSidebar";
 import { PostCard } from "@/components/forum/PostCard";
 import { RaceCard } from "@/components/forum/RaceCard";
 import { CreateRaceModal } from "@/components/forum/CreateRaceModal";
+import { PostDetailModal } from "@/components/forum/PostDetailModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, CalendarDays } from "lucide-react";
+import { Search, CalendarDays } from "lucide-react";
 import { useRaces } from "@/hooks/useRaces";
 import { usePosts } from "@/hooks/usePosts";
 import { CreateRaceData } from "@/types/race";
@@ -39,6 +40,8 @@ export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateRaceModalOpen, setIsCreateRaceModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isPostDetailModalOpen, setIsPostDetailModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
   const { posts: dbPosts, loading: postsLoading, createRacePost } = usePosts();
   const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
@@ -57,6 +60,16 @@ export const Forum = () => {
     if (success) {
       setIsCreateRaceModalOpen(false);
     }
+  };
+
+  const handlePostClick = (post: any) => {
+    setSelectedPost(post);
+    setIsPostDetailModalOpen(true);
+  };
+
+  const handleViewComments = (post: any) => {
+    setSelectedPost(post);
+    setIsPostDetailModalOpen(true);
   };
 
   const filteredPosts = posts.filter(post =>
@@ -99,7 +112,10 @@ export const Forum = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header 
+        onAnunciarCarrera={() => setIsCreateRaceModalOpen(true)}
+        onVerCalendario={() => console.log("Ver Calendario")}
+      />
       
       <div className="flex">
         <ForumSidebar 
@@ -125,17 +141,6 @@ export const Forum = () => {
               </p>
             </div>
 
-            {/* Navigation - Only show if not in category view */}
-            {selectedCategory === "all" && (
-              <div className="flex items-center space-x-4 bg-forum-sidebar border border-border rounded-lg p-4">
-                <Button variant="ghost" size="sm" className="bg-forum-hover">
-                  Foro
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Calendario
-                </Button>
-              </div>
-            )}
 
             {/* Search */}
             <div className="relative">
@@ -148,19 +153,6 @@ export const Forum = () => {
               />
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <Button 
-                onClick={() => setIsCreateRaceModalOpen(true)}
-                className="bg-gradient-button"
-              >
-                Anunciar Carrera
-              </Button>
-              <Button variant="outline">
-                <Calendar className="h-4 w-4 mr-2" />
-                Ver Calendario
-              </Button>
-            </div>
 
             {/* Content */}
             <div className="space-y-4">
@@ -182,7 +174,8 @@ export const Forum = () => {
                   created_at={post.created_at}
                   votes={post.votes}
                   comments_count={post.comments_count}
-                  onViewComments={() => console.log(`Ver comentarios de ${post.id}`)}
+                  onViewComments={() => handleViewComments(post)}
+                  onTitleClick={() => handlePostClick(post)}
                 />
               ))}
 
@@ -198,7 +191,8 @@ export const Forum = () => {
                   created_at={post.createdAt}
                   votes={post.votes}
                   comments_count={post.comments}
-                  onViewComments={() => console.log(`Ver comentarios de ${post.id}`)}
+                  onViewComments={() => handleViewComments(post)}
+                  onTitleClick={() => handlePostClick(post)}
                 />
               ))}
               
@@ -227,6 +221,12 @@ export const Forum = () => {
         isOpen={isCreateRaceModalOpen}
         onClose={() => setIsCreateRaceModalOpen(false)}
         onSubmit={handleCreateRace}
+      />
+
+      <PostDetailModal
+        post={selectedPost}
+        isOpen={isPostDetailModalOpen}
+        onClose={() => setIsPostDetailModalOpen(false)}
       />
     </div>
   );

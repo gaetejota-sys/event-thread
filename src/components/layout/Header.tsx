@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, Menu, User } from "lucide-react";
+import { LogIn, LogOut, Menu, User, Calendar, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const Header = () => {
+interface HeaderProps {
+  onAnunciarCarrera?: () => void;
+  onVerCalendario?: () => void;
+}
+
+export const Header = ({ onAnunciarCarrera, onVerCalendario }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -41,6 +46,28 @@ export const Header = () => {
           <div className="flex items-center">
             <h1 className="text-xl font-bold text-primary-foreground">CHILENERUS</h1>
           </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-3">
+          <Button 
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
+            onClick={onAnunciarCarrera}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Anunciar Carrera
+          </Button>
+          <Button 
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
+            onClick={onVerCalendario}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Ver Calendario
+          </Button>
         </div>
         
         {user ? (

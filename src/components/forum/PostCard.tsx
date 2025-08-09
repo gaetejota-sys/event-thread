@@ -14,6 +14,7 @@ interface PostCardProps {
   votes: number;
   comments_count: number;
   onViewComments?: () => void;
+  onTitleClick?: () => void;
 }
 
 const getCategoryColor = (category: string) => {
@@ -41,7 +42,8 @@ export const PostCard = ({
   created_at, 
   votes, 
   comments_count, 
-  onViewComments 
+  onViewComments,
+  onTitleClick 
 }: PostCardProps) => {
   const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
   return (
@@ -68,7 +70,10 @@ export const PostCard = ({
             </div>
           </div>
           
-          <h3 className="text-lg font-semibold text-foreground hover:text-primary cursor-pointer">
+          <h3 
+            className="text-lg font-semibold text-foreground hover:text-primary cursor-pointer"
+            onClick={onTitleClick}
+          >
             {title}
           </h3>
           
