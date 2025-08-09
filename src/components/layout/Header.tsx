@@ -1,7 +1,36 @@
 import { Button } from "@/components/ui/button";
-import { LogIn, Menu } from "lucide-react";
+import { LogIn, LogOut, Menu, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cerrar sesión. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión correctamente.",
+      });
+    }
+  };
+
   return (
     <header className="h-16 bg-gradient-header shadow-lg relative overflow-hidden">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
@@ -14,10 +43,32 @@ export const Header = () => {
           </div>
         </div>
         
-        <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30">
-          <LogIn className="h-4 w-4 mr-2" />
-          Iniciar Sesión
-        </Button>
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30">
+                <User className="h-4 w-4 mr-2" />
+                {user.user_metadata?.display_name || user.email?.split('@')[0]}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Cerrar Sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
+            onClick={() => navigate("/auth")}
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Iniciar Sesión
+          </Button>
+        )}
       </div>
     </header>
   );
