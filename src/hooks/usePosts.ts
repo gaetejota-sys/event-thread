@@ -155,6 +155,103 @@ ${raceDescription}
     });
   };
 
+  const deletePost = async (postId: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para eliminar un post",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id); // Solo el propietario puede eliminar
+
+      if (error) throw error;
+
+      // Remove from local state
+      setPosts(prev => prev.filter(post => post.id !== postId));
+      
+      toast({
+        title: "¡Éxito!",
+        description: "El aviso ha sido eliminado correctamente",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el aviso. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePost = async (postId: string, postData: CreatePostData) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para editar un post",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          title: postData.title,
+          content: postData.content,
+          category: postData.category,
+          image_urls: postData.image_urls || [],
+          video_urls: postData.video_urls || [],
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', postId)
+        .eq('user_id', user.id) // Solo el propietario puede editar
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? data : post
+      ));
+      
+      toast({
+        title: "¡Éxito!",
+        description: "El aviso ha sido actualizado correctamente",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el aviso. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -164,6 +261,8 @@ ${raceDescription}
     loading,
     createPost: createGeneralPost,
     createRacePost,
+    deletePost,
+    updatePost,
     refetch: fetchPosts,
   };
 };

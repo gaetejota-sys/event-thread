@@ -16,7 +16,7 @@ export const BuyAndSell = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [comunaFilter, setComunaFilter] = useState<string>("all");
   const { user } = useAuth();
-  const { posts, loading, refetch } = usePosts();
+  const { posts, loading, refetch, deletePost, updatePost } = usePosts();
 
   // Filter posts for "Compra venta" category
   const buyAndSellPosts = posts.filter(post => post.category === "Compra venta");
@@ -100,7 +100,11 @@ export const BuyAndSell = () => {
                     <p className="text-muted-foreground">Cargando avisos...</p>
                   </div>
                 ) : filteredPosts.length > 0 ? (
-                  <ListingGrid posts={filteredPosts} />
+                  <ListingGrid 
+                    posts={filteredPosts} 
+                    onDelete={deletePost}
+                    onUpdate={updatePost}
+                  />
                 ) : buyAndSellPosts.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="mb-6">

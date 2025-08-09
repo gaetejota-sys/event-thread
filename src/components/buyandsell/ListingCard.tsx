@@ -2,16 +2,39 @@ import { Post } from "@/types/post";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, MapPin, Clock, Eye, Heart } from "lucide-react";
+import { MessageCircle, Phone, MapPin, Clock, Eye, Heart, Edit2, Trash2, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { PostDetailModal } from "@/components/forum/PostDetailModal";
+import { EditListingForm } from "./EditListingForm";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ListingCardProps {
   post: Post;
+  onDelete?: (postId: string) => Promise<boolean>;
+  onUpdate?: (postId: string, data: any) => Promise<boolean>;
 }
 
-export const ListingCard = ({ post }: ListingCardProps) => {
+export const ListingCard = ({ post, onDelete, onUpdate }: ListingCardProps) => {
+  const { user } = useAuth();
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Extract listing type from title
   const getListingType = (title: string) => {
@@ -58,9 +81,44 @@ export const ListingCard = ({ post }: ListingCardProps) => {
   // Extract first image if available
   const firstImage = post.image_urls && post.image_urls.length > 0 ? post.image_urls[0] : null;
 
+  // Check if current user is the owner
+  const isOwner = user && user.id === post.user_id;
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open modal if clicking on action buttons
+    if ((e.target as HTMLElement).closest('.dropdown-trigger')) {
+      return;
+    }
+    setShowDetailModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (onDelete) {
+      const success = await onDelete(post.id);
+      if (success) {
+        setShowDeleteDialog(false);
+      }
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditForm(false);
+  };
+
+  if (showEditForm) {
+    return (
+      <EditListingForm
+        post={post}
+        onClose={() => setShowEditForm(false)}
+        onSuccess={handleEditSuccess}
+        onUpdate={onUpdate!}
+      />
+    );
+  }
+
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowDetailModal(true)}>
+      <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleCardClick}>
         <CardHeader className="p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
@@ -74,6 +132,39 @@ export const ListingCard = ({ post }: ListingCardProps) => {
                 <p className="text-lg font-bold text-primary">{price}</p>
               )}
             </div>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="dropdown-trigger">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditForm(true);
+                  }}>
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeleteDialog(true);
+                    }}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </CardHeader>
 
@@ -148,6 +239,23 @@ export const ListingCard = ({ post }: ListingCardProps) => {
           onClose={() => setShowDetailModal(false)}
         />
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar aviso?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El aviso será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
