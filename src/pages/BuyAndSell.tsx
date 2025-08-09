@@ -1,14 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CreateListingForm } from "@/components/buyandsell/CreateListingForm";
+import { ListingGrid } from "@/components/buyandsell/ListingGrid";
+import { ListingFilters } from "@/components/buyandsell/ListingFilters";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePosts } from "@/hooks/usePosts";
 
 export const BuyAndSell = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [comunaFilter, setComunaFilter] = useState<string>("all");
   const { user } = useAuth();
+  const { posts, loading, refetch } = usePosts();
+
+  // Filter posts for "Compra venta" category
+  const buyAndSellPosts = posts.filter(post => post.category === "Compra venta");
+
+  // Apply filters and search
+  const filteredPosts = buyAndSellPosts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = typeFilter === "all" || 
+                       post.title.toLowerCase().includes(typeFilter.toLowerCase());
+    
+    const matchesComuna = comunaFilter === "all" ||
+                         post.content.toLowerCase().includes(comunaFilter.toLowerCase());
+    
+    return matchesSearch && matchesType && matchesComuna;
+  });
+
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
+    refetch();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,31 +66,70 @@ export const BuyAndSell = () => {
             {showCreateForm && (
               <CreateListingForm 
                 onClose={() => setShowCreateForm(false)}
-                onSuccess={() => setShowCreateForm(false)}
+                onSuccess={handleCreateSuccess}
               />
             )}
 
             {!showCreateForm && (
-              <div className="text-center py-12">
-                <div className="mb-6">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    <Plus className="w-12 h-12 text-muted-foreground" />
+              <>
+                {/* Search and Filters */}
+                <div className="space-y-4 mb-6">
+                  <div className="flex gap-4 items-center">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        placeholder="Buscar avisos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    No hay avisos publicados
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Sé el primero en publicar un aviso clasificado
-                  </p>
-                  <Button 
-                    onClick={() => setShowCreateForm(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Crear Primer Aviso
-                  </Button>
+                  
+                  <ListingFilters
+                    typeFilter={typeFilter}
+                    comunaFilter={comunaFilter}
+                    onTypeChange={setTypeFilter}
+                    onComunaChange={setComunaFilter}
+                  />
                 </div>
-              </div>
+
+                {/* Listings Grid */}
+                {loading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Cargando avisos...</p>
+                  </div>
+                ) : filteredPosts.length > 0 ? (
+                  <ListingGrid posts={filteredPosts} />
+                ) : buyAndSellPosts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="mb-6">
+                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                        <Plus className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        No hay avisos publicados
+                      </h3>
+                      <p className="text-muted-foreground mb-6">
+                        Sé el primero en publicar un aviso clasificado
+                      </p>
+                      <Button 
+                        onClick={() => setShowCreateForm(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Crear Primer Aviso
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">
+                      No se encontraron avisos que coincidan con tu búsqueda.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>

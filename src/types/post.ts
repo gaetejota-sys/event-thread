@@ -9,6 +9,8 @@ export interface Post {
   updated_at: string;
   votes: number;
   comments_count: number;
+  image_urls?: string[];
+  video_urls?: string[];
   profiles?: {
     display_name: string | null;
   } | null;
