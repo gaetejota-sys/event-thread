@@ -11,11 +11,14 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
+      console.log('Fetching posts from database...');
       const { data, error } = await supabase
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Posts data:', data);
+      console.log('Posts error:', error);
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {

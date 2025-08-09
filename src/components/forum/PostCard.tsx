@@ -43,7 +43,6 @@ export const PostCard = ({
   comments_count, 
   onViewComments 
 }: PostCardProps) => {
-  console.log('PostCard props:', { created_at, author, category, votes, comments_count });
   const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
   return (
     <div className="bg-forum-post border border-border rounded-lg p-4 shadow-card hover:shadow-lg transition-shadow">

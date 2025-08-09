@@ -41,6 +41,15 @@ export const Forum = () => {
   const { posts: dbPosts, loading: postsLoading, createRacePost } = usePosts();
   const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
 
+  // Debug logging
+  console.log('Forum Debug:', {
+    dbPostsCount: dbPosts.length,
+    racesCount: races.length,
+    postsLoading,
+    racesLoading,
+    dbPosts: dbPosts.slice(0, 2) // Show first 2 posts for debugging
+  });
+
   const handleCreateRace = async (raceData: CreateRaceData) => {
     const success = await createRace(raceData);
     if (success) {
