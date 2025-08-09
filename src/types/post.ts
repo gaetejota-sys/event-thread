@@ -25,6 +25,9 @@ export interface Comment {
   updated_at: string;
   image_urls?: string[];
   video_urls?: string[];
+  profiles?: {
+    display_name: string | null;
+  } | null;
 }
 
 export interface CreatePostData {

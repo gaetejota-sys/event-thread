@@ -22,7 +22,7 @@ export const CommentCard = ({ comment, onDelete, onUpdate }: CommentCardProps) =
   
   const createdDate = new Date(comment.created_at);
   const updatedDate = new Date(comment.updated_at);
-  const authorName = "Usuario";
+  const authorName = comment.profiles?.display_name || "Usuario";
   const isOwner = user?.id === comment.user_id;
   const isEdited = comment.created_at !== comment.updated_at;
 

@@ -13,7 +13,12 @@ export const useComments = (postId: string) => {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            display_name
+          )
+        `)
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
 
@@ -97,8 +102,13 @@ export const useComments = (postId: string) => {
           image_urls: imageUrls,
           video_urls: videoUrls,
         })
-         .select()
-         .single();
+        .select(`
+          *,
+          profiles (
+            display_name
+          )
+        `)
+        .single();
 
       console.log('Insert result:', { data, error });
 
