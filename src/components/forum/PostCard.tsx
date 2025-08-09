@@ -15,6 +15,7 @@ interface PostCardProps {
   comments_count: number;
   onViewComments?: () => void;
   onTitleClick?: () => void;
+  showCategory?: boolean;
 }
 
 const getCategoryColor = (category: string) => {
@@ -43,7 +44,8 @@ export const PostCard = ({
   votes, 
   comments_count, 
   onViewComments,
-  onTitleClick 
+  onTitleClick,
+  showCategory = true
 }: PostCardProps) => {
   const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
   return (
@@ -61,9 +63,11 @@ export const PostCard = ({
         
         <div className="flex-1 space-y-2">
           <div className="flex items-center space-x-2">
-            <Badge className={`text-xs ${getCategoryColor(category)}`}>
-              {category}
-            </Badge>
+            {showCategory && (
+              <Badge className={`text-xs ${getCategoryColor(category)}`}>
+                {category}
+              </Badge>
+            )}
             <div className="flex items-center text-xs text-muted-foreground">
               <Clock className="h-3 w-3 mr-1" />
               hace {formatDistanceToNow(createdDate, { locale: es })}

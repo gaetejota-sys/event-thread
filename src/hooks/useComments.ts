@@ -110,6 +110,91 @@ export const useComments = (postId: string) => {
     }
   };
 
+  const deleteComment = async (commentId: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para eliminar comentarios",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setComments(prev => prev.filter(comment => comment.id !== commentId));
+      
+      toast({
+        title: "Comentario eliminado",
+        description: "El comentario ha sido eliminado correctamente",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el comentario",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const updateComment = async (commentId: string, content: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para editar comentarios",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .update({ 
+          content: content.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', commentId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId ? { ...comment, content: data.content, updated_at: data.updated_at } : comment
+      ));
+      
+      toast({
+        title: "Comentario actualizado",
+        description: "El comentario ha sido editado correctamente",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo editar el comentario",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (postId) {
       fetchComments();
@@ -120,6 +205,8 @@ export const useComments = (postId: string) => {
     comments,
     loading,
     createComment,
+    deleteComment,
+    updateComment,
     refetch: fetchComments,
   };
 };

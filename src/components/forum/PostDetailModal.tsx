@@ -38,7 +38,7 @@ const getCategoryColor = (category: string) => {
 export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps) => {
   if (!post) return null;
 
-  const { comments, loading, createComment } = useComments(post.id);
+  const { comments, loading, createComment, deleteComment, updateComment } = useComments(post.id);
   const { polls, loading: pollsLoading, createPoll, vote, addOption } = usePolls(post.id);
   const createdDate = new Date(post.created_at);
   const authorName = post.profiles?.display_name || "Usuario";
@@ -129,7 +129,12 @@ export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps)
             ) : comments.length > 0 ? (
               <div className="space-y-3">
                 {comments.map((comment) => (
-                  <CommentCard key={comment.id} comment={comment} />
+                  <CommentCard 
+                    key={comment.id} 
+                    comment={comment}
+                    onDelete={deleteComment}
+                    onUpdate={updateComment}
+                  />
                 ))}
               </div>
             ) : (

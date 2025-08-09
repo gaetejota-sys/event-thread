@@ -72,10 +72,12 @@ export const Forum = () => {
     setIsPostDetailModalOpen(true);
   };
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || post.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const filteredDbPosts = dbPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,6 +178,7 @@ export const Forum = () => {
                   comments_count={post.comments_count}
                   onViewComments={() => handleViewComments(post)}
                   onTitleClick={() => handlePostClick(post)}
+                  showCategory={selectedCategory === "all"}
                 />
               ))}
 
@@ -193,6 +196,7 @@ export const Forum = () => {
                   comments_count={post.comments}
                   onViewComments={() => handleViewComments(post)}
                   onTitleClick={() => handlePostClick(post)}
+                  showCategory={selectedCategory === "all"}
                 />
               ))}
               
