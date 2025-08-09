@@ -4,7 +4,7 @@ import { Race, CreateRaceData } from '@/types/race';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-export const useRaces = () => {
+export const useRaces = (onRaceCreated?: (raceId: string, title: string, description: string, location: string, date: string) => Promise<boolean>) => {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -96,6 +96,11 @@ export const useRaces = () => {
 
       // Add the new race to the local state
       setRaces(prev => [data, ...prev]);
+      
+      // Create forum post for the race if callback provided
+      if (onRaceCreated) {
+        await onRaceCreated(data.id, data.title, data.description, data.location, data.event_date);
+      }
       
       toast({
         title: "¡Éxito!",

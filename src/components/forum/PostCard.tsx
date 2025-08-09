@@ -10,9 +10,9 @@ interface PostCardProps {
   content: string;
   author: string;
   category: string;
-  createdAt: Date;
+  created_at: string | Date;
   votes: number;
-  comments: number;
+  comments_count: number;
   onViewComments?: () => void;
 }
 
@@ -26,21 +26,24 @@ const getCategoryColor = (category: string) => {
       return 'bg-category-general text-white';
     case 'técnica':
       return 'bg-category-technical text-white';
+    case 'próximas carreras':
+      return 'bg-gradient-button text-white';
     default:
       return 'bg-muted text-muted-foreground';
   }
 };
 
-export const PostCard = ({
-  title,
-  content,
-  author,
-  category,
-  createdAt,
-  votes,
-  comments,
-  onViewComments
+export const PostCard = ({ 
+  title, 
+  content, 
+  author, 
+  category, 
+  created_at, 
+  votes, 
+  comments_count, 
+  onViewComments 
 }: PostCardProps) => {
+  const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
   return (
     <div className="bg-forum-post border border-border rounded-lg p-4 shadow-card hover:shadow-lg transition-shadow">
       <div className="flex items-start space-x-3">
@@ -61,7 +64,7 @@ export const PostCard = ({
             </Badge>
             <div className="flex items-center text-xs text-muted-foreground">
               <Clock className="h-3 w-3 mr-1" />
-              hace {formatDistanceToNow(createdAt, { locale: es })}
+              hace {formatDistanceToNow(createdDate, { locale: es })}
             </div>
           </div>
           
@@ -85,7 +88,7 @@ export const PostCard = ({
               onClick={onViewComments}
             >
               <MessageSquare className="h-3 w-3 mr-1" />
-              Ver comentarios
+              {comments_count} comentarios
             </Button>
           </div>
         </div>

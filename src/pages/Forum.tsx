@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar } from "lucide-react";
 import { useRaces } from "@/hooks/useRaces";
+import { usePosts } from "@/hooks/usePosts";
 import { CreateRaceData } from "@/types/race";
 
 const mockPosts = [
@@ -37,7 +38,8 @@ export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateRaceModalOpen, setIsCreateRaceModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
-  const { races, loading, createRace } = useRaces();
+  const { posts: dbPosts, loading: postsLoading, createRacePost } = usePosts();
+  const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
 
   const handleCreateRace = async (raceData: CreateRaceData) => {
     const success = await createRace(raceData);
@@ -51,11 +53,18 @@ export const Forum = () => {
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredDbPosts = dbPosts.filter(post =>
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const filteredRaces = races.filter(race =>
     race.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     race.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     race.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const loading = racesLoading || postsLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,21 +118,39 @@ export const Forum = () => {
                 </div>
               )}
               
-              {/* Races */}
-              {filteredRaces.map((race) => (
-                <RaceCard key={race.id} {...race} />
+              {/* Database Posts (including race posts) */}
+              {filteredDbPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  id={post.id}
+                  title={post.title}
+                  content={post.content}
+                  author="Usuario"
+                  category={post.category}
+                  created_at={post.created_at}
+                  votes={post.votes}
+                  comments_count={post.comments_count}
+                  onViewComments={() => console.log(`Ver comentarios de ${post.id}`)}
+                />
               ))}
-              
-              {/* Posts */}
+
+              {/* Legacy Mock Posts */}
               {filteredPosts.map((post) => (
                 <PostCard
                   key={post.id}
-                  {...post}
+                  id={post.id}
+                  title={post.title}
+                  content={post.content}
+                  author={post.author}
+                  category={post.category}
+                  created_at={post.createdAt}
+                  votes={post.votes}
+                  comments_count={post.comments}
                   onViewComments={() => console.log(`Ver comentarios de ${post.id}`)}
                 />
               ))}
               
-              {!loading && filteredPosts.length === 0 && filteredRaces.length === 0 && (
+              {!loading && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
