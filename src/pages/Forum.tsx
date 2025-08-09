@@ -106,10 +106,11 @@ export const Forum = () => {
 
   // Calculate post counts for sidebar
   const postsCount = {
-    proximasCarreras: dbPosts.filter(p => p.category === "Próximas Carreras").length,
-    carrerasPasadas: dbPosts.filter(p => p.category === "Carreras Pasadas").length,
-    general: dbPosts.filter(p => p.category === "General").length,
-    tecnica: dbPosts.filter(p => p.category === "Técnica").length,
+    proximasCarreras: dbPosts.filter(p => p.category === "Próximas carreras").length,
+    carrerasPasadas: dbPosts.filter(p => p.category === "Carreras pasadas").length,
+    temasGenerales: dbPosts.filter(p => p.category === "Temas generales").length,
+    desafios: dbPosts.filter(p => p.category === "Desafíos").length,
+    compraVenta: dbPosts.filter(p => p.category === "Compra venta").length,
   };
 
   return (
@@ -134,8 +135,16 @@ export const Forum = () => {
                 {selectedCategory === "all" ? "Todos los posts" : selectedCategory}
               </h1>
               <p className="text-muted-foreground">
-                {selectedCategory === "Próximas Carreras" 
+                {selectedCategory === "Próximas carreras" 
                   ? "Carreras anunciadas por la comunidad. Los usuarios pueden comentar en estos temas."
+                  : selectedCategory === "Carreras pasadas"
+                  ? "Discusiones sobre carreras que ya ocurrieron"
+                  : selectedCategory === "Temas generales"
+                  ? "Conversaciones generales sobre running y temas relacionados"
+                  : selectedCategory === "Desafíos"
+                  ? "Retos y desafíos para la comunidad de corredores"
+                  : selectedCategory === "Compra venta"
+                  ? "Compra y venta de equipamiento deportivo"
                   : selectedCategory === "all" 
                   ? "Todos los temas del foro"
                   : `Discusiones sobre ${selectedCategory.toLowerCase()}`
@@ -201,7 +210,7 @@ export const Forum = () => {
               ))}
               
               {/* Show message if no results for current category */}
-              {!loading && selectedCategory === "Próximas Carreras" && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory === "Próximas carreras" && filteredDbPosts.length === 0 && (
                 <div className="text-center py-12">
                   <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No hay carreras anunciadas</h3>
@@ -211,9 +220,9 @@ export const Forum = () => {
                 </div>
               )}
               
-              {!loading && selectedCategory !== "Próximas Carreras" && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory !== "Próximas carreras" && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No se encontraron resultados</p>
+                  <p className="text-muted-foreground">No se encontraron resultados para esta categoría</p>
                 </div>
               )}
             </div>

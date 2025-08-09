@@ -100,7 +100,7 @@ ${raceDescription}
     return await createPost({
       title: `🏃‍♂️ ${raceTitle}`,
       content: postContent,
-      category: 'Próximas Carreras',
+      category: 'Próximas carreras',
       race_id: raceId,
     });
   };

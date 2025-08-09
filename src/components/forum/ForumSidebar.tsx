@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Users, Wrench, Target, Plus } from "lucide-react";
+import { CalendarDays, Users, Target, ShoppingCart, Plus } from "lucide-react";
 
 interface ForumSidebarProps {
   selectedCategory: string;
@@ -8,8 +8,9 @@ interface ForumSidebarProps {
   postsCount: {
     proximasCarreras: number;
     carrerasPasadas: number;
-    general: number;
-    tecnica: number;
+    temasGenerales: number;
+    desafios: number;
+    compraVenta: number;
   };
 }
 
@@ -23,32 +24,39 @@ export const ForumSidebar = ({ selectedCategory, onCategoryChange, postsCount }:
       description: "Todos los temas del foro"
     },
     {
-      id: "Próximas Carreras",
-      name: "Próximas Carreras",
+      id: "Temas generales",
+      name: "Temas generales",
+      icon: Users,
+      count: postsCount.temasGenerales,
+      description: "Discusiones generales sobre running"
+    },
+    {
+      id: "Próximas carreras",
+      name: "Próximas carreras",
       icon: CalendarDays,
       count: postsCount.proximasCarreras,
       description: "Carreras que están por venir"
     },
     {
-      id: "Carreras Pasadas",
-      name: "Carreras Pasadas",
+      id: "Carreras pasadas",
+      name: "Carreras pasadas",
       icon: CalendarDays,
       count: postsCount.carrerasPasadas,
       description: "Archivos de carreras ya ocurridas"
     },
     {
-      id: "General",
-      name: "General",
-      icon: Users,
-      count: postsCount.general,
-      description: "Discusiones generales sobre carreras"
+      id: "Desafíos",
+      name: "Desafíos",
+      icon: Target,
+      count: postsCount.desafios,
+      description: "Retos y desafíos para corredores"
     },
     {
-      id: "Técnica",
-      name: "Técnica",
-      icon: Target,
-      count: postsCount.tecnica,
-      description: "Discusiones técnicas sobre carreras"
+      id: "Compra venta",
+      name: "Compra venta",
+      icon: ShoppingCart,
+      count: postsCount.compraVenta,
+      description: "Compra y venta de equipamiento"
     }
   ];
 
@@ -89,7 +97,7 @@ export const ForumSidebar = ({ selectedCategory, onCategoryChange, postsCount }:
         </div>
       </div>
 
-      {selectedCategory === "Próximas Carreras" && (
+      {selectedCategory === "Próximas carreras" && (
         <div className="bg-muted/50 rounded-lg p-4">
           <h3 className="font-medium mb-2">Próximas Carreras</h3>
           <p className="text-sm text-muted-foreground mb-3">

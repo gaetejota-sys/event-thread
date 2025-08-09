@@ -20,16 +20,16 @@ interface PostCardProps {
 
 const getCategoryColor = (category: string) => {
   switch (category.toLowerCase()) {
-    case 'entrenamiento':
-      return 'bg-category-training text-white';
-    case 'equipamiento':
-      return 'bg-category-equipment text-white';
-    case 'general':
+    case 'temas generales':
       return 'bg-category-general text-white';
-    case 'técnica':
-      return 'bg-category-technical text-white';
     case 'próximas carreras':
       return 'bg-gradient-button text-white';
+    case 'carreras pasadas':
+      return 'bg-category-training text-white';
+    case 'desafíos':
+      return 'bg-category-technical text-white';
+    case 'compra venta':
+      return 'bg-category-equipment text-white';
     default:
       return 'bg-muted text-muted-foreground';
   }
