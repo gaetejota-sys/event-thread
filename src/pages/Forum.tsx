@@ -46,7 +46,7 @@ export const Forum = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostDetailModalOpen, setIsPostDetailModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
-  const { posts: dbPosts, loading: postsLoading, createRacePost, createPost, deletePost } = usePosts();
+  const { posts: dbPosts, loading: postsLoading, createRacePost, createPost, deletePost, updatePost } = usePosts();
   const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
 
   // Debug logging
@@ -219,6 +219,7 @@ export const Forum = () => {
                   onViewComments={() => handleViewComments(post)}
                   onTitleClick={() => handlePostClick(post)}
                   onDelete={deletePost}
+                  onUpdate={updatePost}
                   showCategory={selectedCategory === "all"}
                 />
               ))}

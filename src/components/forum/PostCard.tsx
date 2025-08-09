@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { EditForumPostForm } from "./EditForumPostForm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,6 +79,7 @@ export const PostCard = ({
 }: PostCardProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
   
   // Check if current user is the owner
@@ -90,6 +92,14 @@ export const PostCard = ({
         setShowDeleteDialog(false);
       }
     }
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditForm(false);
+  };
+
+  const handleEdit = () => {
+    setShowEditForm(true);
   };
 
   return (
@@ -128,7 +138,13 @@ export const PostCard = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem 
+                  {onUpdate && (
+                    <DropdownMenuItem onClick={handleEdit}>
+                      <Edit2 className="mr-2 h-4 w-4" />
+                      Editar
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
                     onClick={() => setShowDeleteDialog(true)}
                     className="text-destructive"
                   >
@@ -203,6 +219,31 @@ export const PostCard = ({
           </div>
         </div>
       </div>
+
+      {/* Edit Form Modal */}
+      {showEditForm && onUpdate && (
+        <EditForumPostForm
+          post={{ 
+            id, 
+            title, 
+            content, 
+            category, 
+            image_urls, 
+            video_urls,
+            user_id: user_id || '',
+            created_at: typeof created_at === 'string' ? created_at : created_at.toISOString(),
+            updated_at: typeof created_at === 'string' ? created_at : created_at.toISOString(),
+            votes,
+            comments_count,
+            race_id: undefined,
+            profiles: null
+          }}
+          isOpen={showEditForm}
+          onClose={() => setShowEditForm(false)}
+          onSuccess={handleEditSuccess}
+          onUpdate={onUpdate}
+        />
+      )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
