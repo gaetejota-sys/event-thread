@@ -1,8 +1,26 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ArrowUp, ArrowDown, Clock } from "lucide-react";
+import { MessageSquare, ArrowUp, ArrowDown, Clock, Edit2, Trash2, MoreVertical } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PostCardProps {
   id: string;
@@ -15,8 +33,11 @@ interface PostCardProps {
   comments_count: number;
   image_urls?: string[];
   video_urls?: string[];
+  user_id?: string;
   onViewComments?: () => void;
   onTitleClick?: () => void;
+  onDelete?: (postId: string) => Promise<boolean>;
+  onUpdate?: (postId: string, data: any) => Promise<boolean>;
   showCategory?: boolean;
 }
 
@@ -38,6 +59,7 @@ const getCategoryColor = (category: string) => {
 };
 
 export const PostCard = ({ 
+  id,
   title, 
   content, 
   author, 
@@ -47,11 +69,29 @@ export const PostCard = ({
   comments_count, 
   image_urls,
   video_urls,
+  user_id,
   onViewComments,
   onTitleClick,
+  onDelete,
+  onUpdate,
   showCategory = true
 }: PostCardProps) => {
+  const { user } = useAuth();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const createdDate = typeof created_at === 'string' ? new Date(created_at) : created_at;
+  
+  // Check if current user is the owner
+  const isOwner = user && user_id && user.id === user_id;
+
+  const handleDelete = async () => {
+    if (onDelete) {
+      const success = await onDelete(id);
+      if (success) {
+        setShowDeleteDialog(false);
+      }
+    }
+  };
+
   return (
     <div className="bg-forum-post border border-border rounded-lg p-4 shadow-card hover:shadow-lg transition-shadow">
       <div className="flex items-start space-x-3">
@@ -66,16 +106,38 @@ export const PostCard = ({
         </div>
         
         <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            {showCategory && (
-              <Badge className={`text-xs ${getCategoryColor(category)}`}>
-                {category}
-              </Badge>
-            )}
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
-              hace {formatDistanceToNow(createdDate, { locale: es })}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {showCategory && (
+                <Badge className={`text-xs ${getCategoryColor(category)}`}>
+                  {category}
+                </Badge>
+              )}
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Clock className="h-3 w-3 mr-1" />
+                hace {formatDistanceToNow(createdDate, { locale: es })}
+              </div>
             </div>
+            
+            {/* Actions menu for owner */}
+            {isOwner && onDelete && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem 
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           
           <h3 
@@ -141,6 +203,23 @@ export const PostCard = ({
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El post será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
