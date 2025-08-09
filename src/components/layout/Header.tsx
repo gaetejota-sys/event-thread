@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, Menu, User, Calendar, Plus } from "lucide-react";
+import { LogIn, LogOut, Menu, User, Calendar, Plus, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +50,15 @@ export const Header = ({ onAnunciarCarrera, onVerCalendario }: HeaderProps) => {
         
         {/* Action Buttons */}
         <div className="flex items-center space-x-3">
+          <Button 
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
+            onClick={() => navigate('/buy-and-sell')}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Compra y Venta
+          </Button>
           <Button 
             variant="secondary"
             size="sm"
