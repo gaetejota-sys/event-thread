@@ -67,6 +67,14 @@ export const Forum = () => {
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Debug filtered results
+  console.log('Filtered results:', {
+    searchQuery,
+    filteredDbPosts: filteredDbPosts.length,
+    filteredPosts: filteredPosts.length,
+    allDbPosts: dbPosts.map(p => ({ id: p.id, title: p.title, category: p.category }))
+  });
+
   const filteredRaces = races.filter(race =>
     race.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     race.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -127,7 +135,7 @@ export const Forum = () => {
                 </div>
               )}
               
-              {/* Database Posts (including race posts) */}
+              {/* Database Posts (including race posts) - THESE SHOULD SHOW FIRST */}
               {filteredDbPosts.map((post) => (
                 <PostCard
                   key={post.id}
