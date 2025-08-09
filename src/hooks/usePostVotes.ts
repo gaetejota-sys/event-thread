@@ -56,6 +56,11 @@ export const usePostVotes = (postId: string) => {
 
           if (error) throw error;
           setUserVote(null);
+          
+          toast({
+            title: "Voto eliminado",
+            description: "Tu voto ha sido eliminado",
+          });
         } else {
           // Update vote type
           const { data, error } = await supabase
@@ -67,6 +72,11 @@ export const usePostVotes = (postId: string) => {
 
           if (error) throw error;
           setUserVote(data);
+          
+          toast({
+            title: "Voto actualizado",
+            description: voteType === 1 ? "Te gusta este post" : "No te gusta este post",
+          });
         }
       } else {
         // Create new vote
@@ -82,7 +92,15 @@ export const usePostVotes = (postId: string) => {
 
         if (error) throw error;
         setUserVote(data);
+        
+        toast({
+          title: "Voto registrado",
+          description: voteType === 1 ? "Te gusta este post" : "No te gusta este post",
+        });
       }
+      
+      // Refetch to ensure we have the latest state
+      await fetchUserVote();
     } catch (error) {
       console.error('Error voting:', error);
       toast({
