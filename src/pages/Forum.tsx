@@ -117,7 +117,7 @@ export const Forum = () => {
     <div className="min-h-screen bg-background">
       <Header 
         onAnunciarCarrera={() => setIsCreateRaceModalOpen(true)}
-        onVerCalendario={() => console.log("Ver Calendario")}
+        onVerCalendario={() => window.open('/calendar', '_blank')}
       />
       
       <div className="flex">

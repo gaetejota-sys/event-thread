@@ -63,7 +63,7 @@ export const Header = ({ onAnunciarCarrera, onVerCalendario }: HeaderProps) => {
             variant="secondary"
             size="sm"
             className="bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
-            onClick={onVerCalendario}
+            onClick={() => onVerCalendario ? onVerCalendario() : navigate('/calendar')}
           >
             <Calendar className="h-4 w-4 mr-2" />
             Ver Calendario

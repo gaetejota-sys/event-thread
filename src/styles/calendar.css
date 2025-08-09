@@ -1,0 +1,118 @@
+/* Calendar specific styles */
+.rbc-calendar {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+}
+
+.rbc-header {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 8px 12px;
+}
+
+.rbc-month-view {
+  border: none;
+}
+
+.rbc-month-row {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.rbc-day-bg {
+  background: hsl(var(--background));
+}
+
+.rbc-day-bg.rbc-off-range-bg {
+  background: hsl(var(--muted));
+}
+
+.rbc-today {
+  background: hsl(var(--accent));
+}
+
+.rbc-button-link {
+  color: hsl(var(--foreground));
+}
+
+.rbc-event {
+  background: hsl(var(--primary));
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.rbc-event:hover {
+  background: hsl(var(--primary)) !important;
+  opacity: 0.9;
+}
+
+.rbc-selected {
+  background: hsl(var(--primary)) !important;
+}
+
+.rbc-toolbar {
+  margin-bottom: 16px;
+  color: hsl(var(--foreground));
+}
+
+.rbc-toolbar button {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background: hsl(var(--muted));
+}
+
+.rbc-toolbar button.rbc-active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.rbc-show-more {
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+.rbc-date-cell {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.rbc-off-range {
+  color: hsl(var(--muted-foreground));
+}
+
+.rbc-current-time-indicator {
+  background: hsl(var(--destructive));
+}
+
+/* Leaflet map overrides for dark mode compatibility */
+.leaflet-popup-content-wrapper {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background: hsl(var(--popover));
+}
+
+.leaflet-control-zoom a {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.leaflet-control-zoom a:hover {
+  background: hsl(var(--muted));
+}
