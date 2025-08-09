@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ArrowUp, ArrowDown, Clock, Edit2, Trash2, MoreVertical } from "lucide-react";
+import { MessageSquare, Clock, Edit2, Trash2, MoreVertical } from "lucide-react";
+import { VoteButtons } from "./VoteButtons";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
@@ -105,15 +106,7 @@ export const PostCard = ({
   return (
     <div className="bg-forum-post border border-border rounded-lg p-4 shadow-card hover:shadow-lg transition-shadow">
       <div className="flex items-start space-x-3">
-        <div className="flex flex-col items-center space-y-1">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-forum-hover">
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-medium">{votes}</span>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-forum-hover">
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        </div>
+        <VoteButtons postId={id} votes={votes} className="flex flex-col items-center space-y-1" />
         
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between">

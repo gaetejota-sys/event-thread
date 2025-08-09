@@ -242,6 +242,33 @@ export type Database = {
           },
         ]
       }
+      post_votes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+          vote_type: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+          vote_type: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+          vote_type?: number
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           category: string
