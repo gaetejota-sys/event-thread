@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, ArrowDown, Clock, User, MessageSquare } from "lucide-react";
+import { Clock, User, MessageSquare } from "lucide-react";
+import { VoteButtons } from "./VoteButtons";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { CommentCard } from "./CommentCard";
@@ -54,15 +55,7 @@ export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps)
           {/* Post Header */}
           <div className="bg-forum-post border border-border rounded-lg p-6">
             <div className="flex items-start space-x-4">
-              <div className="flex flex-col items-center space-y-2">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-forum-hover">
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium">{post.votes}</span>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-forum-hover">
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </div>
+              <VoteButtons postId={post.id} votes={post.votes} className="flex flex-col items-center space-y-2" />
               
               <div className="flex-1 space-y-4">
                 <div className="flex items-center space-x-3">
