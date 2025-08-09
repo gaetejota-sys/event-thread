@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					end: 'hsl(var(--primary-end))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -52,6 +53,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				forum: {
+					sidebar: 'hsl(var(--forum-sidebar))',
+					post: 'hsl(var(--forum-post))',
+					hover: 'hsl(var(--forum-hover))'
+				},
+				category: {
+					training: 'hsl(var(--category-training))',
+					equipment: 'hsl(var(--category-equipment))',
+					general: 'hsl(var(--category-general))',
+					technical: 'hsl(var(--category-technical))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,6 +79,14 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-header': 'var(--gradient-header)',
+				'gradient-button': 'var(--gradient-button)'
+			},
+			boxShadow: {
+				'card': 'var(--shadow-card)',
+				'modal': 'var(--shadow-modal)'
 			},
 			keyframes: {
 				'accordion-down': {
