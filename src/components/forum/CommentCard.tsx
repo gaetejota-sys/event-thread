@@ -25,6 +25,34 @@ export const CommentCard = ({ comment }: CommentCardProps) => {
       <div className="text-sm text-foreground whitespace-pre-wrap">
         {comment.content}
       </div>
+
+      {/* Image attachments */}
+      {comment.image_urls && comment.image_urls.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {comment.image_urls.map((url, index) => (
+            <img
+              key={index}
+              src={url}
+              alt={`Imagen ${index + 1}`}
+              className="rounded-lg max-h-64 object-cover w-full"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Video attachments */}
+      {comment.video_urls && comment.video_urls.length > 0 && (
+        <div className="space-y-2">
+          {comment.video_urls.map((url, index) => (
+            <video
+              key={index}
+              src={url}
+              controls
+              className="rounded-lg max-h-64 w-full"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

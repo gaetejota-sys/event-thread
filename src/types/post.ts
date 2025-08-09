@@ -21,6 +21,8 @@ export interface Comment {
   content: string;
   created_at: string;
   updated_at: string;
+  image_urls?: string[];
+  video_urls?: string[];
 }
 
 export interface CreatePostData {

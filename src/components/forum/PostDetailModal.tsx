@@ -7,7 +7,9 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { CommentCard } from "./CommentCard";
 import { CommentForm } from "./CommentForm";
+import { PollCard } from "./PollCard";
 import { useComments } from "@/hooks/useComments";
+import { usePolls } from "@/hooks/usePolls";
 import { Post } from "@/types/post";
 
 interface PostDetailModalProps {
@@ -37,6 +39,7 @@ export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps)
   if (!post) return null;
 
   const { comments, loading, createComment } = useComments(post.id);
+  const { polls, loading: pollsLoading, createPoll, vote, addOption } = usePolls(post.id);
   const createdDate = new Date(post.created_at);
   const authorName = post.profiles?.display_name || "Usuario";
 
@@ -97,8 +100,27 @@ export const PostDetailModal = ({ post, isOpen, onClose }: PostDetailModalProps)
             <h3 className="text-lg font-semibold">Comentarios</h3>
             
             {/* Comment Form */}
-            <CommentForm onSubmit={createComment} loading={loading} />
+            <CommentForm 
+              onSubmit={createComment} 
+              onCreatePoll={createPoll}
+              loading={loading} 
+            />
             
+            {/* Polls Section */}
+            {polls.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-md font-semibold">Encuestas</h4>
+                {polls.map((poll) => (
+                  <PollCard
+                    key={poll.id}
+                    poll={poll}
+                    onVote={vote}
+                    onAddOption={addOption}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Comments List */}
             {loading ? (
               <div className="text-center py-8">

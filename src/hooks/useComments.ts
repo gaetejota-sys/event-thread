@@ -31,7 +31,30 @@ export const useComments = (postId: string) => {
     }
   };
 
-  const createComment = async (content: string) => {
+  const uploadFiles = async (files: File[]): Promise<string[]> => {
+    if (!user) return [];
+
+    const uploadPromises = files.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('comment-attachments')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('comment-attachments')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    });
+
+    return Promise.all(uploadPromises);
+  };
+
+  const createComment = async (content: string, imageFiles?: File[], videoFiles?: File[]) => {
     if (!user) {
       toast({
         title: "Error",
@@ -42,14 +65,27 @@ export const useComments = (postId: string) => {
     }
 
     try {
+      let imageUrls: string[] = [];
+      let videoUrls: string[] = [];
+
+      // Upload files if provided
+      if (imageFiles && imageFiles.length > 0) {
+        imageUrls = await uploadFiles(imageFiles);
+      }
+      if (videoFiles && videoFiles.length > 0) {
+        videoUrls = await uploadFiles(videoFiles);
+      }
+
       const { data, error } = await supabase
         .from('comments')
         .insert({
           user_id: user.id,
           post_id: postId,
           content: content.trim(),
+          image_urls: imageUrls,
+          video_urls: videoUrls,
         })
-        .select('*')
+        .select()
         .single();
 
       if (error) throw error;
