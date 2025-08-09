@@ -55,7 +55,10 @@ export const useComments = (postId: string) => {
   };
 
   const createComment = async (content: string, imageFiles?: File[], videoFiles?: File[]) => {
+    console.log('createComment called with:', { content, user, postId });
+    
     if (!user) {
+      console.log('No user found, showing toast');
       toast({
         title: "Error",
         description: "Debes iniciar sesión para comentar",
@@ -68,6 +71,7 @@ export const useComments = (postId: string) => {
       let imageUrls: string[] = [];
       let videoUrls: string[] = [];
 
+      console.log('Uploading files...');
       // Upload files if provided
       if (imageFiles && imageFiles.length > 0) {
         imageUrls = await uploadFiles(imageFiles);
@@ -75,6 +79,14 @@ export const useComments = (postId: string) => {
       if (videoFiles && videoFiles.length > 0) {
         videoUrls = await uploadFiles(videoFiles);
       }
+
+      console.log('Inserting comment to database...', {
+        user_id: user.id,
+        post_id: postId,
+        content: content.trim(),
+        image_urls: imageUrls,
+        video_urls: videoUrls,
+      });
 
       const { data, error } = await supabase
         .from('comments')
@@ -85,10 +97,15 @@ export const useComments = (postId: string) => {
           image_urls: imageUrls,
           video_urls: videoUrls,
         })
-        .select()
-        .single();
+         .select()
+         .single();
 
-      if (error) throw error;
+      console.log('Insert result:', { data, error });
+
+      if (error) {
+        console.error('Insert error:', error);
+        throw error;
+      }
 
       // Add the new comment to the local state
       setComments(prev => [data, ...prev]);
@@ -98,6 +115,7 @@ export const useComments = (postId: string) => {
         description: "Tu comentario ha sido agregado correctamente",
       });
 
+      console.log('Comment created successfully');
       return true;
     } catch (error) {
       console.error('Error creating comment:', error);
