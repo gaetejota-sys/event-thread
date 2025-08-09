@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { ForumSidebar } from "@/components/forum/ForumSidebar";
 import { PostCard } from "@/components/forum/PostCard";
 import { RaceCard } from "@/components/forum/RaceCard";
 import { CreateRaceModal } from "@/components/forum/CreateRaceModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, CalendarDays } from "lucide-react";
 import { useRaces } from "@/hooks/useRaces";
 import { usePosts } from "@/hooks/usePosts";
 import { CreateRaceData } from "@/types/race";
@@ -36,6 +37,7 @@ const mockPosts = [
 
 export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateRaceModalOpen, setIsCreateRaceModalOpen] = useState(false);
   const [posts] = useState(mockPosts);
   const { posts: dbPosts, loading: postsLoading, createRacePost } = usePosts();
@@ -62,17 +64,21 @@ export const Forum = () => {
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredDbPosts = dbPosts.filter(post =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDbPosts = dbPosts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || post.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   // Debug filtered results
   console.log('Filtered results:', {
     searchQuery,
+    selectedCategory,
     filteredDbPosts: filteredDbPosts.length,
     filteredPosts: filteredPosts.length,
-    allDbPosts: dbPosts.map(p => ({ id: p.id, title: p.title, category: p.category }))
+    allDbPosts: dbPosts.map(p => ({ id: p.id, title: p.title, category: p.category })),
+    proximasCarrerasCount: dbPosts.filter(p => p.category === "Próximas Carreras").length
   });
 
   const filteredRaces = races.filter(race =>
@@ -83,24 +89,53 @@ export const Forum = () => {
 
   const loading = racesLoading || postsLoading;
 
+  // Calculate post counts for sidebar
+  const postsCount = {
+    proximasCarreras: dbPosts.filter(p => p.category === "Próximas Carreras").length,
+    carrerasPasadas: dbPosts.filter(p => p.category === "Carreras Pasadas").length,
+    general: dbPosts.filter(p => p.category === "General").length,
+    tecnica: dbPosts.filter(p => p.category === "Técnica").length,
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <div className="flex">
-        <Sidebar />
+        <ForumSidebar 
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          postsCount={postsCount}
+        />
         
         <main className="flex-1 p-6">
           <div className="max-w-4xl space-y-6">
-            {/* Navigation */}
-            <div className="flex items-center space-x-4 bg-forum-sidebar border border-border rounded-lg p-4">
-              <Button variant="ghost" size="sm" className="bg-forum-hover">
-                Foro
-              </Button>
-              <Button variant="ghost" size="sm">
-                Calendario
-              </Button>
+            {/* Category Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold">
+                {selectedCategory === "all" ? "Todos los posts" : selectedCategory}
+              </h1>
+              <p className="text-muted-foreground">
+                {selectedCategory === "Próximas Carreras" 
+                  ? "Carreras anunciadas por la comunidad. Los usuarios pueden comentar en estos temas."
+                  : selectedCategory === "all" 
+                  ? "Todos los temas del foro"
+                  : `Discusiones sobre ${selectedCategory.toLowerCase()}`
+                }
+              </p>
             </div>
+
+            {/* Navigation - Only show if not in category view */}
+            {selectedCategory === "all" && (
+              <div className="flex items-center space-x-4 bg-forum-sidebar border border-border rounded-lg p-4">
+                <Button variant="ghost" size="sm" className="bg-forum-hover">
+                  Foro
+                </Button>
+                <Button variant="ghost" size="sm">
+                  Calendario
+                </Button>
+              </div>
+            )}
 
             {/* Search */}
             <div className="relative">
@@ -167,7 +202,18 @@ export const Forum = () => {
                 />
               ))}
               
-              {!loading && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
+              {/* Show message if no results for current category */}
+              {!loading && selectedCategory === "Próximas Carreras" && filteredDbPosts.length === 0 && (
+                <div className="text-center py-12">
+                  <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No hay carreras anunciadas</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Cuando alguien anuncie una carrera, aparecerá aquí para que puedas comentar y participar en la conversación.
+                  </p>
+                </div>
+              )}
+              
+              {!loading && selectedCategory !== "Próximas Carreras" && filteredPosts.length === 0 && filteredRaces.length === 0 && filteredDbPosts.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
