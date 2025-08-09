@@ -210,10 +210,12 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_urls: string[] | null
           race_id: string | null
           title: string
           updated_at: string
           user_id: string
+          video_urls: string[] | null
           votes: number | null
         }
         Insert: {
@@ -222,10 +224,12 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_urls?: string[] | null
           race_id?: string | null
           title: string
           updated_at?: string
           user_id: string
+          video_urls?: string[] | null
           votes?: number | null
         }
         Update: {
@@ -234,10 +238,12 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_urls?: string[] | null
           race_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
+          video_urls?: string[] | null
           votes?: number | null
         }
         Relationships: [
