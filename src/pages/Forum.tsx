@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
+import { HeroCarousel } from "@/components/layout/HeroCarousel";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ForumSidebar } from "@/components/forum/ForumSidebar";
 import { PostCard } from "@/components/forum/PostCard";
@@ -133,6 +134,8 @@ export const Forum = () => {
         onAnunciarCarrera={() => setIsCreateRaceModalOpen(true)}
         onVerCalendario={() => window.open('/calendar', '_blank')}
       />
+      
+      <HeroCarousel />
       
       <div className="flex">
         <ForumSidebar 

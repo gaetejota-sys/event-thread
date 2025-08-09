@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
+import { HeroCarousel } from "@/components/layout/HeroCarousel";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CreateListingForm } from "@/components/buyandsell/CreateListingForm";
 import { ListingGrid } from "@/components/buyandsell/ListingGrid";
@@ -43,6 +44,7 @@ export const BuyAndSell = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <HeroCarousel />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 p-6">

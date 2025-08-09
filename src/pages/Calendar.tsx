@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Header } from '@/components/layout/Header';
+import { HeroCarousel } from '@/components/layout/HeroCarousel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -108,6 +109,7 @@ export const CalendarPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <HeroCarousel />
       
       <div className="container mx-auto p-6">
         {/* Header with back button */}
