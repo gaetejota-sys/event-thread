@@ -4,6 +4,9 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { RaceEventModal } from '@/components/calendar/RaceEventModal';
 import { useRaces } from '@/hooks/useRaces';
 import { Race } from '@/types/race';
@@ -47,6 +50,7 @@ export const CalendarPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<Race | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { races, loading } = useRaces();
+  const navigate = useNavigate();
 
   // Transform races into calendar events
   const events: CalendarEvent[] = useMemo(() => {
@@ -106,11 +110,25 @@ export const CalendarPage = () => {
       <Header />
       
       <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Calendario de Carreras</h1>
-          <p className="text-muted-foreground mt-2">
-            Encuentra todas las carreras programadas. Haz clic en cualquier evento para ver detalles y ubicación.
-          </p>
+        {/* Header with back button */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <div className="flex items-center space-x-4 mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Volver al inicio</span>
+              </Button>
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">Calendario de Carreras</h1>
+            <p className="text-muted-foreground mt-2">
+              Encuentra todas las carreras programadas. Haz clic en cualquier evento para ver detalles y ubicación.
+            </p>
+          </div>
         </div>
 
         <div className="bg-card rounded-lg shadow-sm border border-border p-4">
