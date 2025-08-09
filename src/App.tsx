@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Forum } from "./pages/Forum";
 import { CalendarPage } from "./pages/Calendar";
+import { BuyAndSell } from "./pages/BuyAndSell";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/buy-and-sell" element={<BuyAndSell />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

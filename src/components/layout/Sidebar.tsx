@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Calendar, Plus, Clock, Archive, Users, Wrench } from "lucide-react";
+import { MessageSquare, Calendar, Plus, Clock, Archive, Users, Wrench, ShoppingCart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface CategoryProps {
   title: string;
@@ -69,6 +70,30 @@ export const Sidebar = () => {
           count={0}
           description="Discusiones técnicas sobre carreras"
         />
+        
+        <div className="pt-4 border-t border-border">
+          <Link to="/buy-and-sell">
+            <div className="bg-forum-sidebar border border-border rounded-lg p-4 hover:bg-forum-hover transition-colors cursor-pointer">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <ShoppingCart className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Compra y Venta</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Publica tus avisos clasificados
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Crear Aviso
+              </Button>
+            </div>
+          </Link>
+        </div>
       </div>
     </aside>
   );
