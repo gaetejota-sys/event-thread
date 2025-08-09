@@ -4,7 +4,7 @@ import { Race, CreateRaceData } from '@/types/race';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-export const useRaces = (onRaceCreated?: (raceId: string, title: string, description: string, location: string, date: string) => Promise<boolean>) => {
+export const useRaces = (onRaceCreated?: (raceId: string, title: string, description: string, comuna: string, date: string) => Promise<boolean>) => {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -85,11 +85,16 @@ export const useRaces = (onRaceCreated?: (raceId: string, title: string, descrip
           user_id: user.id,
           title: raceData.title,
           description: raceData.description,
-          location: raceData.location,
+          location: raceData.comuna, // Mantener location por compatibilidad
+          comuna: raceData.comuna,
+          cancha_id: raceData.cancha_id || null,
           event_date: raceData.date.toISOString().split('T')[0],
           image_urls: imageUrls,
         })
-        .select('*')
+        .select(`
+          *,
+          canchas(nombre, latitud, longitud)
+        `)
         .single();
 
       if (error) throw error;
@@ -99,7 +104,7 @@ export const useRaces = (onRaceCreated?: (raceId: string, title: string, descrip
       
       // Create forum post for the race if callback provided
       if (onRaceCreated) {
-        await onRaceCreated(data.id, data.title, data.description, data.location, data.event_date);
+        await onRaceCreated(data.id, data.title, data.description, data.comuna, data.event_date);
       }
       
       toast({

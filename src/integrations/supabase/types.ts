@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      canchas: {
+        Row: {
+          comuna: string
+          created_at: string
+          descripcion: string | null
+          id: string
+          latitud: number
+          longitud: number
+          nombre: string
+          tipo_superficie: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          comuna: string
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          latitud: number
+          longitud: number
+          nombre: string
+          tipo_superficie?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          comuna?: string
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          latitud?: number
+          longitud?: number
+          nombre?: string
+          tipo_superficie?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -125,6 +164,8 @@ export type Database = {
       }
       races: {
         Row: {
+          cancha_id: string | null
+          comuna: string | null
           created_at: string
           description: string
           event_date: string
@@ -136,6 +177,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancha_id?: string | null
+          comuna?: string | null
           created_at?: string
           description: string
           event_date: string
@@ -147,6 +190,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancha_id?: string | null
+          comuna?: string | null
           created_at?: string
           description?: string
           event_date?: string
@@ -157,7 +202,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "races_cancha_id_fkey"
+            columns: ["cancha_id"]
+            isOneToOne: false
+            referencedRelation: "canchas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -6,10 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarIcon, Upload, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { COMUNAS_CHILE } from "@/data/comunas-chile";
+import { useCanchas } from "@/hooks/useCanchas";
+import { CreateCanchaModal } from "./CreateCanchaModal";
 
 interface CreateRaceModalProps {
   isOpen: boolean;
@@ -21,10 +25,14 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    location: "",
+    comuna: "",
+    cancha_id: "",
     date: null as Date | null,
     images: [] as File[]
   });
+  
+  const [isCreateCanchaModalOpen, setIsCreateCanchaModalOpen] = useState(false);
+  const { canchas, loading: canchasLoading, createCancha } = useCanchas();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -41,13 +49,22 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
     }));
   };
 
+  const handleCreateCancha = async (canchaData: any) => {
+    const success = await createCancha(canchaData);
+    if (success) {
+      setIsCreateCanchaModalOpen(false);
+    }
+    return success;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
     setFormData({
       title: "",
       description: "",
-      location: "",
+      comuna: "",
+      cancha_id: "",
       date: null,
       images: []
     });
@@ -89,14 +106,55 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Lugar</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              placeholder="Ej: Santiago, Chile"
-              required
-            />
+            <Label htmlFor="comuna">Comuna</Label>
+            <Select value={formData.comuna} onValueChange={(value) => setFormData(prev => ({ ...prev, comuna: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona una comuna" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {COMUNAS_CHILE.map((comuna) => (
+                  <SelectItem key={comuna} value={comuna}>
+                    {comuna}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cancha">Cancha</Label>
+            <div className="flex gap-2">
+              <Select 
+                value={formData.cancha_id} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, cancha_id: value }))}
+                disabled={canchasLoading}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder={canchasLoading ? "Cargando canchas..." : "Selecciona una cancha"} />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {canchas
+                    .filter(cancha => !formData.comuna || cancha.comuna === formData.comuna)
+                    .map((cancha) => (
+                    <SelectItem key={cancha.id} value={cancha.id}>
+                      {cancha.nombre} - {cancha.comuna}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setIsCreateCanchaModalOpen(true)}
+                title="Dar de alta nueva cancha"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Si tu cancha no aparece, dale de alta usando el botón +
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -179,6 +237,12 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
           </div>
         </form>
       </DialogContent>
+
+      <CreateCanchaModal
+        isOpen={isCreateCanchaModalOpen}
+        onClose={() => setIsCreateCanchaModalOpen(false)}
+        onSubmit={handleCreateCancha}
+      />
     </Dialog>
   );
 };
