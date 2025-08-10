@@ -11,6 +11,9 @@ interface VoteButtonsProps {
 
 export const VoteButtons = ({ postId, votes, className }: VoteButtonsProps) => {
   const { userVote, loading, vote } = usePostVotes(postId);
+  const optimisticVotes = userVote
+    ? votes + (userVote.vote_type === 1 ? 1 : -1)
+    : votes;
 
   const handleLike = () => vote(1);
   const handleDislike = () => vote(-1);
@@ -32,11 +35,11 @@ export const VoteButtons = ({ postId, votes, className }: VoteButtonsProps) => {
       
       <span className={cn(
         "text-sm font-medium",
-        votes > 0 && "text-green-600",
-        votes < 0 && "text-red-600",
-        votes === 0 && "text-muted-foreground"
+        optimisticVotes > 0 && "text-green-600",
+        optimisticVotes < 0 && "text-red-600",
+        optimisticVotes === 0 && "text-muted-foreground"
       )}>
-        {votes}
+        {optimisticVotes}
       </span>
       
       <Button

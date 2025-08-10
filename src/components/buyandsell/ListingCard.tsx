@@ -1,4 +1,5 @@
 import { Post } from "@/types/post";
+import { formatCLP } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,9 @@ export const ListingCard = ({ post, onDelete, onUpdate }: ListingCardProps) => {
   // Extract price from content
   const getPrice = (content: string) => {
     const priceMatch = content.match(/\*\*Precio:\*\*\s*\$?([0-9.,]+)/);
-    return priceMatch ? `$${priceMatch[1]}` : null;
+    if (!priceMatch) return null;
+    const numeric = Number(priceMatch[1].replace(/\./g, '').replace(/,/g, '.'));
+    return formatCLP(numeric);
   };
 
   // Extract comuna from content

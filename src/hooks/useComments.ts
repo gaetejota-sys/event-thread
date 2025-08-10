@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Comment } from '@/types/post';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+// Subidas a Supabase Storage
+const MEDIA_BUCKET = 'comment-attachments';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
 export const useComments = (postId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -23,7 +26,7 @@ export const useComments = (postId: string) => {
       const userIds = [...new Set(data?.map(comment => comment.user_id) || [])];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, display_name')
+        .select('id, display_name, avatar_url')
         .in('id', userIds);
 
       // Map profiles to comments
@@ -47,25 +50,15 @@ export const useComments = (postId: string) => {
 
   const uploadFiles = async (files: File[]): Promise<string[]> => {
     if (!user) return [];
-
-    const uploadPromises = files.map(async (file) => {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      const { data, error } = await supabase.storage
-        .from('comment-attachments')
-        .upload(fileName, file);
-
+    const uploads = files.map(async (file) => {
+      const ext = file.name.split('.').pop();
+      const key = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabaseClient.storage.from(MEDIA_BUCKET).upload(key, file);
       if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('comment-attachments')
-        .getPublicUrl(fileName);
-
+      const { data: { publicUrl } } = supabaseClient.storage.from(MEDIA_BUCKET).getPublicUrl(key);
       return publicUrl;
     });
-
-    return Promise.all(uploadPromises);
+    return Promise.all(uploads);
   };
 
   const createComment = async (content: string, imageFiles?: File[], videoFiles?: File[]) => {
@@ -124,7 +117,7 @@ export const useComments = (postId: string) => {
       // Fetch user profile for this comment
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id, display_name')
+        .select('id, display_name, avatar_url')
         .eq('id', user.id)
         .single();
 

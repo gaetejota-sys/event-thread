@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Upload, Image as ImageIcon, Video, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +21,6 @@ interface EditForumPostFormProps {
 interface PostFormData {
   title: string;
   content: string;
-  category: string;
 }
 
 export const EditForumPostForm = ({ post, isOpen, onClose, onSuccess, onUpdate }: EditForumPostFormProps) => {
@@ -35,8 +33,7 @@ export const EditForumPostForm = ({ post, isOpen, onClose, onSuccess, onUpdate }
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<PostFormData>({
     defaultValues: {
       title: post.title,
-      content: post.content,
-      category: post.category
+      content: post.content
     }
   });
 
@@ -92,7 +89,6 @@ export const EditForumPostForm = ({ post, isOpen, onClose, onSuccess, onUpdate }
       const success = await onUpdate(post.id, {
         title: data.title,
         content: data.content,
-        category: data.category,
         image_urls: images,
         video_urls: video ? [video] : []
       });
@@ -123,22 +119,6 @@ export const EditForumPostForm = ({ post, isOpen, onClose, onSuccess, onUpdate }
         </DialogHeader>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Categoría */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Categoría *</Label>
-            <Select onValueChange={(value) => setValue("category", value)} defaultValue={post.category}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona una categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="General">General</SelectItem>
-                <SelectItem value="Técnica">Técnica</SelectItem>
-                <SelectItem value="Compra venta">Compra venta</SelectItem>
-                <SelectItem value="Carreras pasadas">Carreras pasadas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Título */}
           <div className="space-y-2">
             <Label htmlFor="title">Título *</Label>

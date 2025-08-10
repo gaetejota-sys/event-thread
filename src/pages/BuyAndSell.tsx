@@ -10,6 +10,7 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePosts } from "@/hooks/usePosts";
+import { Seo } from "@/components/seo/Seo";
 
 export const BuyAndSell = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -43,6 +44,11 @@ export const BuyAndSell = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Compra y Venta - Chileneros"
+        description="Publica y encuentra equipamiento para carreras."
+        url={typeof window !== 'undefined' ? window.location.href : undefined}
+      />
       <Header />
       <HeroCarousel />
       <div className="flex">

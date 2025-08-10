@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { HeroCarousel } from "@/components/layout/HeroCarousel";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -8,36 +8,16 @@ import { RaceCard } from "@/components/forum/RaceCard";
 import { CreateRaceModal } from "@/components/forum/CreateRaceModal";
 import { CreatePostModal } from "@/components/forum/CreatePostModal";
 import { PostDetailModal } from "@/components/forum/PostDetailModal";
+import { Footer } from "@/components/layout/Footer";
+import { Seo } from "@/components/seo/Seo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, CalendarDays, Plus } from "lucide-react";
 import { useRaces } from "@/hooks/useRaces";
+import { postAppEvent } from "@/lib/events";
 import { usePosts } from "@/hooks/usePosts";
 import { CreateRaceData } from "@/types/race";
 import { CreatePostData } from "@/types/post";
-
-const mockPosts = [
-  {
-    id: "1",
-    title: "¿Cuál es vuestra rutina de entrenamiento favorita?",
-    content: "Estoy buscando nuevas ideas para variar mi entrenamiento semanal. ¿Qué rutinas funcionan mejor para vosotros? Me interesa especialmente combinar trabajo de resistencia con fuerza.",
-    author: "RunnerPro",
-    category: "Entrenamiento",
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    votes: 0,
-    comments: 0
-  },
-  {
-    id: "2",
-    title: "Reseña: Zapatillas Nike Air Zoom Pegasus 40",
-    content: "Después de 500km con estas zapatillas, aquí está mi reseña completa. Excelente amortiguación, durabilidad sorprendente y muy cómodas para entrenamientos largos.",
-    author: "MaratonMania",
-    category: "Equipamiento",
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    votes: 0,
-    comments: 0
-  }
-];
 
 export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,9 +26,8 @@ export const Forum = () => {
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostDetailModalOpen, setIsPostDetailModalOpen] = useState(false);
-  const [posts] = useState(mockPosts);
-  const { posts: dbPosts, loading: postsLoading, createRacePost, createPost, deletePost, updatePost } = usePosts();
-  const { races, loading: racesLoading, createRace } = useRaces(createRacePost);
+  const { posts: dbPosts, loading: postsLoading, createRacePost, createPost, deletePost, updatePost, syncRacePostImages } = usePosts();
+  const { races, loading: racesLoading, createRace, deleteRace } = useRaces(createRacePost);
 
   // Debug logging
   console.log('Forum Debug:', {
@@ -74,6 +53,12 @@ export const Forum = () => {
     return success;
   };
 
+  // Migración puntual al abrir el foro: sincroniza imágenes de carreras faltantes en posts
+  // Nota: se ejecuta una vez por carga
+  useEffect(() => {
+    syncRacePostImages();
+  }, []);
+
   const handlePostClick = (post: any) => {
     setSelectedPost(post);
     setIsPostDetailModalOpen(true);
@@ -84,31 +69,11 @@ export const Forum = () => {
     setIsPostDetailModalOpen(true);
   };
 
-  const filteredPosts = posts.filter(post => {
+  const filteredPosts = dbPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.content.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
-  });
-
-  const filteredDbPosts = dbPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.content.toLowerCase().includes(searchQuery.toLowerCase());
-    // Fix case sensitivity issue - normalize categories for comparison
-    const normalizedPostCategory = post.category.toLowerCase();
-    const normalizedSelectedCategory = selectedCategory.toLowerCase();
-    const matchesCategory = selectedCategory === "all" || normalizedPostCategory === normalizedSelectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Debug filtered results
-  console.log('Filtered results:', {
-    searchQuery,
-    selectedCategory,
-    filteredDbPosts: filteredDbPosts.length,
-    filteredPosts: filteredPosts.length,
-    allDbPosts: dbPosts.map(p => ({ id: p.id, title: p.title, category: p.category })),
-    proximasCarrerasCount: dbPosts.filter(p => p.category === "Próximas Carreras").length
   });
 
   const filteredRaces = races.filter(race =>
@@ -130,6 +95,11 @@ export const Forum = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Foro Chileneros - Comunidad de carreras"
+        description="Participa en el foro: próximas carreras, temas generales, desafíos y compra/venta."
+        url={typeof window !== 'undefined' ? window.location.href : undefined}
+      />
       <Header 
         onAnunciarCarrera={() => setIsCreateRaceModalOpen(true)}
         onVerCalendario={() => window.open('/calendar', '_blank')}
@@ -146,6 +116,51 @@ export const Forum = () => {
         
         <main className="flex-1 p-6">
           <div className="max-w-4xl space-y-6">
+            {/* Header with search and create buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Buscar en el foro..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setIsCreateRaceModalOpen(true)}
+                  className="bg-gradient-button"
+                >
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Anunciar Carrera
+                </Button>
+                
+                {selectedCategory !== "all" && selectedCategory !== "Próximas carreras" && (
+                  <Button 
+                    onClick={() => setIsCreatePostModalOpen(true)}
+                    className="w-full bg-gradient-button"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear nuevo tema
+                  </Button>
+                )}
+
+                {selectedCategory === "Próximas carreras" && (
+                  <Button 
+                    variant="outline"
+                    className="w-full cursor-not-allowed opacity-60"
+                    disabled
+                    title="No se puede publicar desde aquí. Use 'Anunciar Carrera' para crear una nueva carrera."
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear Post
+                  </Button>
+                )}
+              </div>
+            </div>
+
             {/* Category Header */}
             <div className="mb-6">
               <h1 className="text-2xl font-bold">
@@ -170,32 +185,6 @@ export const Forum = () => {
             </div>
 
 
-            {/* Search and Create Post Section */}
-            <div className="space-y-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar posts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Create Post Button for non-race categories */}
-              {selectedCategory !== "all" && selectedCategory !== "Próximas carreras" && (
-                <Button 
-                  onClick={() => setIsCreatePostModalOpen(true)}
-                  className="w-full bg-gradient-button"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear nuevo tema
-                </Button>
-              )}
-            </div>
-
-
             {/* Content */}
             <div className="space-y-4">
               {loading && (
@@ -205,13 +194,14 @@ export const Forum = () => {
               )}
               
               {/* Database Posts (including race posts) - THESE SHOULD SHOW FIRST */}
-              {filteredDbPosts.map((post) => (
+              {filteredPosts.map((post, idx) => (
                 <PostCard
                   key={post.id}
                   id={post.id}
                   title={post.title}
                   content={post.content}
-                  author="Usuario"
+                  author={post.profiles?.display_name || "Usuario"}
+                  author_avatar_url={post.profiles?.avatar_url || undefined}
                   category={post.category}
                   created_at={post.created_at}
                   votes={post.votes}
@@ -219,34 +209,29 @@ export const Forum = () => {
                   image_urls={post.image_urls}
                   video_urls={post.video_urls}
                   user_id={post.user_id}
+                  race_id={post.race_id}
                   onViewComments={() => handleViewComments(post)}
                   onTitleClick={() => handlePostClick(post)}
                   onDelete={deletePost}
                   onUpdate={updatePost}
+                  onDeleteRace={async (raceId) => {
+                    const ok = await deleteRace(raceId);
+                    if (ok) {
+                      // opcional: también quitar los posts locales que referencien la carrera
+                      postAppEvent({ type: 'race-deleted', payload: { raceId } });
+                    }
+                    return ok;
+                  }}
                   showCategory={selectedCategory === "all"}
+                  animationDelayMs={idx * 40}
                 />
               ))}
 
               {/* Legacy Mock Posts */}
-              {filteredPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  id={post.id}
-                  title={post.title}
-                  content={post.content}
-                  author={post.author}
-                  category={post.category}
-                  created_at={post.createdAt}
-                  votes={post.votes}
-                  comments_count={post.comments}
-                  onViewComments={() => handleViewComments(post)}
-                  onTitleClick={() => handlePostClick(post)}
-                  showCategory={selectedCategory === "all"}
-                />
-              ))}
+              {/* This section is removed as per the edit hint */}
               
               {/* Show message if no results for current category */}
-              {!loading && selectedCategory === "Próximas carreras" && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory === "Próximas carreras" && filteredPosts.length === 0 && (
                 <div className="text-center py-12">
                   <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No hay carreras anunciadas</h3>
@@ -256,7 +241,7 @@ export const Forum = () => {
                 </div>
               )}
               
-              {!loading && selectedCategory !== "Próximas carreras" && selectedCategory !== "all" && filteredPosts.length === 0 && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory !== "Próximas carreras" && selectedCategory !== "all" && filteredPosts.length === 0 && (
                 <div className="text-center py-12">
                   <Plus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No hay temas en esta categoría</h3>
@@ -273,7 +258,7 @@ export const Forum = () => {
                 </div>
               )}
 
-              {!loading && selectedCategory === "all" && filteredPosts.length === 0 && filteredDbPosts.length === 0 && (
+              {!loading && selectedCategory === "all" && filteredPosts.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
@@ -302,6 +287,7 @@ export const Forum = () => {
         isOpen={isPostDetailModalOpen}
         onClose={() => setIsPostDetailModalOpen(false)}
       />
+      <Footer />
     </div>
   );
 };

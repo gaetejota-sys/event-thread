@@ -4,6 +4,7 @@ import { Calendar, MapPin, User } from "lucide-react";
 import { Race } from "@/types/race";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { getCategoryStyles } from "@/lib/categoryColors";
 
 interface RaceCardProps extends Race {}
 
@@ -16,11 +17,14 @@ export const RaceCard = ({
   created_at,
   profiles 
 }: RaceCardProps) => {
+  const styles = getCategoryStyles("Próximas carreras");
+
   return (
-    <Card className="w-full hover:shadow-lg transition-shadow">
+    <Card className="relative w-full hover:shadow-xl transition-all hover:-translate-y-[1px] animate-fade-in-up">
+      <span className={`absolute left-0 top-0 h-full w-1 ${styles.dot} rounded-l-lg`} />
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="bg-gradient-button text-white">
+          <Badge variant="secondary" className={`${styles.badge}`}>
             Carrera
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">

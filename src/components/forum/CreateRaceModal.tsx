@@ -28,18 +28,50 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
     comuna: "",
     cancha_id: "",
     date: null as Date | null,
-    images: [] as File[]
+    images: [] as File[],
+    video: null as File | null,
   });
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoPreview, setVideoPreview] = useState<string>("");
   
   const [isCreateCanchaModalOpen, setIsCreateCanchaModalOpen] = useState(false);
   const { canchas, loading: canchasLoading, createCancha } = useCanchas();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
+  const addFiles = (files: File[]) => {
+    if (files.length === 0) return;
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...files]
     }));
+    // Crear previews con FileReader (más robusto en algunos navegadores)
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result && typeof e.target.result === 'string') {
+          setImagePreviews(prev => [...prev, e.target.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    addFiles(files);
+  };
+
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+    if (!file) return;
+    if (!file.type.startsWith('video/')) return;
+    setFormData(prev => ({ ...prev, video: file }));
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result && typeof e.target.result === 'string') {
+        setVideoPreview(e.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const removeImage = (index: number) => {
@@ -47,6 +79,7 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleCreateCancha = async (canchaData: any) => {
@@ -66,8 +99,10 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
       comuna: "",
       cancha_id: "",
       date: null,
-      images: []
+      images: [],
+      video: null,
     });
+    setVideoPreview("");
     onClose();
   };
 
@@ -91,6 +126,44 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
               placeholder="Ej: Maratón de Santiago 2024"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Video (opcional)</Label>
+            {!videoPreview ? (
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                <Input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                  id="race-video-upload"
+                />
+                <Label htmlFor="race-video-upload" className="cursor-pointer text-sm text-muted-foreground">
+                  Haz clic para subir un video (MP4)
+                </Label>
+              </div>
+            ) : (
+              <div className="relative">
+                <video
+                  src={videoPreview}
+                  className="w-full h-40 object-cover rounded"
+                  controls
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                  onClick={() => { setFormData(prev => ({ ...prev, video: null })); setVideoPreview(""); }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -186,7 +259,15 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
 
           <div className="space-y-2">
             <Label>Fotografías</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+            <div
+              className="border-2 border-dashed border-border rounded-lg p-6 text-center"
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+                addFiles(files);
+              }}
+            >
               <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
               <Input
                 type="file"
@@ -203,14 +284,15 @@ export const CreateRaceModal = ({ isOpen, onClose, onSubmit }: CreateRaceModalPr
               </Label>
             </div>
             
-            {formData.images.length > 0 && (
+            {imagePreviews.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mt-4">
-                {formData.images.map((file, index) => (
+                {imagePreviews.map((src, index) => (
                   <div key={index} className="relative">
                     <img
-                      src={URL.createObjectURL(file)}
+                      src={src}
                       alt={`Preview ${index + 1}`}
                       className="w-full h-20 object-cover rounded"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                     <Button
                       type="button"

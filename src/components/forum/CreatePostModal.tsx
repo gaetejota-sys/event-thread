@@ -185,20 +185,25 @@ export const CreatePostModal = ({ isOpen, onClose, onSubmit, onCreatePoll, defau
           )}
 
           {videoFiles.length > 0 && (
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
               {videoFiles.map((file, index) => (
                 <div key={index} className="relative">
-                  <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm font-medium">{file.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-destructive hover:bg-destructive/10"
-                      onClick={() => removeVideo(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  <video
+                    src={URL.createObjectURL(file)}
+                    className="w-full h-32 object-cover rounded-lg"
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 w-6 p-0 bg-black/50 hover:bg-black/70 text-white"
+                    onClick={() => removeVideo(index)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               ))}
             </div>

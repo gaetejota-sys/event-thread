@@ -27,4 +27,5 @@ export interface CreateRaceData {
   cancha_id: string;
   date: Date | null;
   images: File[];
+  video?: File | null;
 }

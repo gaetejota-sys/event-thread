@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Clock, User, Edit, Trash2, Check, X } from "lucide-react";
+import { Clock, User, Edit, Trash2, Check, X, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Comment } from "@/types/post";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,7 @@ export const CommentCard = ({ comment, onDelete, onUpdate }: CommentCardProps) =
   const authorName = comment.profiles?.display_name || "Usuario";
   const isOwner = user?.id === comment.user_id;
   const isEdited = comment.created_at !== comment.updated_at;
+  const canMessage = !!user && user.id !== comment.user_id;
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -53,7 +55,7 @@ export const CommentCard = ({ comment, onDelete, onUpdate }: CommentCardProps) =
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <User className="h-3 w-3" />
-          <span className="font-medium text-primary">{authorName}</span>
+          <Link to={`/u/${comment.user_id}`} className="font-medium text-primary hover:underline">{authorName}</Link>
           <div className="flex items-center">
             <Clock className="h-3 w-3 mr-1" />
             hace {formatDistanceToNow(createdDate, { locale: es })}
@@ -61,6 +63,14 @@ export const CommentCard = ({ comment, onDelete, onUpdate }: CommentCardProps) =
               <span className="ml-2 text-xs text-muted-foreground">(editado)</span>
             )}
           </div>
+          {canMessage && (
+            <Link to={`/messages?to=${comment.user_id}`} className="ml-2">
+              <Button variant="outline" size="sm" className="h-6 px-2">
+                <Send className="h-3 w-3 mr-1" />
+                Mensaje
+              </Button>
+            </Link>
+          )}
         </div>
         
         {isOwner && (

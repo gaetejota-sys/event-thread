@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Post, CreatePostData } from '@/types/post';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+// Contabo removido: todas las subidas van por Supabase Storage
 
 export const usePosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -20,7 +21,31 @@ export const usePosts = () => {
       console.log('Posts data:', data);
       console.log('Posts error:', error);
       if (error) throw error;
-      setPosts(data || []);
+
+      // Enriquecer posts con perfiles (display_name, avatar_url)
+      const userIds = [...new Set((data || []).map(post => post.user_id))];
+      let profiles: { id: string; display_name: string | null; avatar_url: string | null }[] | null = [];
+      if (userIds.length > 0) {
+        const { data: profData } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', userIds);
+        profiles = profData as any;
+      }
+
+      const sanitizeUrls = (arr: any): string[] => {
+        if (!Array.isArray(arr)) return [];
+        return arr.filter((u) => typeof u === 'string' && u.trim().length > 0);
+      };
+
+      const postsWithProfiles = (data || []).map(post => ({
+        ...post,
+        image_urls: sanitizeUrls((post as any).image_urls),
+        video_urls: sanitizeUrls((post as any).video_urls),
+        profiles: (profiles || [])?.find(p => p.id === post.user_id) || null,
+      }));
+
+      setPosts(postsWithProfiles);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -60,8 +85,17 @@ export const usePosts = () => {
 
       if (error) throw error;
 
+      // Fetch user profile and attach to the post
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      const postWithProfile = { ...data, profiles: profile || null };
+
       // Add the new post to the local state
-      setPosts(prev => [data, ...prev]);
+      setPosts(prev => [postWithProfile, ...prev]);
       
       toast({
         title: "¡Éxito!",
@@ -110,8 +144,17 @@ export const usePosts = () => {
 
       if (error) throw error;
 
+      // Fetch user profile and attach to the post
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      const postWithProfile = { ...data, profiles: profile || null };
+
       // Add the new post to the local state
-      setPosts(prev => [data, ...prev]);
+      setPosts(prev => [postWithProfile, ...prev]);
       
       toast({
         title: "¡Éxito!",
@@ -132,7 +175,7 @@ export const usePosts = () => {
     }
   };
 
-  const createRacePost = async (raceId: string, raceTitle: string, raceDescription: string, raceLocation: string, raceDate: string) => {
+  const createRacePost = async (raceId: string, raceTitle: string, raceDescription: string, raceLocation: string, raceDate: string, imageUrls: string[] = [], videoUrl?: string | null) => {
     if (!user) return false;
 
     const postContent = `📍 **Ubicación:** ${raceLocation}
@@ -147,12 +190,64 @@ ${raceDescription}
 
 ¡Comparte tu opinión y únete a la conversación sobre esta carrera!`;
 
-    return await createPost({
+    // Importante: usar createGeneralPost para que respete image_urls/video_urls
+    return await createGeneralPost({
       title: `🏃‍♂️ ${raceTitle}`,
       content: postContent,
       category: 'Próximas carreras',
       race_id: raceId,
+      image_urls: imageUrls,
+      video_urls: videoUrl ? [videoUrl] : [],
     });
+  };
+
+  // Sincroniza imágenes de carreras hacia posts de "Próximas carreras" que no las tengan
+  const syncRacePostImages = async () => {
+    try {
+      // Traer posts de próximas carreras con race_id
+      const { data: racePosts, error: postsErr } = await supabase
+        .from('posts')
+        .select('id, race_id, image_urls, category')
+        .eq('category', 'Próximas carreras')
+        .not('race_id', 'is', null);
+
+      if (postsErr) throw postsErr;
+
+      const needing = (racePosts || []).filter(p => !p.image_urls || (p.image_urls as string[]).length === 0);
+      if (needing.length === 0) return { updated: 0 };
+
+      const raceIds = [...new Set(needing.map(p => p.race_id as string))];
+      const { data: races, error: racesErr } = await supabase
+        .from('races')
+        .select('id, image_urls')
+        .in('id', raceIds);
+      if (racesErr) throw racesErr;
+
+      let updated = 0;
+      for (const post of needing) {
+        const race = races?.find(r => r.id === post.race_id);
+        const imgs = ((race?.image_urls || []) as string[]).filter(
+          (u) => typeof u === 'string' && u.trim().length > 0
+        );
+        if (imgs.length > 0) {
+          const { error: upErr, data: updatedPost } = await supabase
+            .from('posts')
+            .update({ image_urls: imgs })
+            .eq('id', post.id)
+            .select('*')
+            .single();
+          if (!upErr && updatedPost) {
+            updated += 1;
+            // Actualizar estado local
+            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, image_urls: imgs } as any : p));
+          }
+        }
+      }
+      return { updated };
+    } catch (err) {
+      console.error('Error syncing race post images:', err);
+      return { updated: 0 };
+    }
   };
 
   const deletePost = async (postId: string) => {
@@ -228,9 +323,9 @@ ${raceDescription}
 
       if (error) throw error;
 
-      // Update local state
+      // Update local state, preservando profiles existente
       setPosts(prev => prev.map(post => 
-        post.id === postId ? data : post
+        post.id === postId ? { ...post, ...data } : post
       ));
       
       toast({
@@ -264,5 +359,6 @@ ${raceDescription}
     deletePost,
     updatePost,
     refetch: fetchPosts,
+    syncRacePostImages,
   };
 };

@@ -13,6 +13,7 @@ export interface Post {
   video_urls?: string[];
   profiles?: {
     display_name: string | null;
+    avatar_url?: string | null;
   } | null;
 }
 
@@ -27,6 +28,7 @@ export interface Comment {
   video_urls?: string[];
   profiles?: {
     display_name: string | null;
+    avatar_url?: string | null;
   } | null;
 }
 
